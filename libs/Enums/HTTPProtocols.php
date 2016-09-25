@@ -9,7 +9,7 @@
 namespace PhCrawler\Enums;
 
 
-class HTTPProtocols
+interface HTTPProtocols
 {
     /**
      * HTTP protocol 1.0

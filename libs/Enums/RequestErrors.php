@@ -9,7 +9,7 @@
 namespace PhCrawler\Enums;
 
 
-class RequestErrors
+interface RequestErrors
 {
     /**
      * Error-Code: SSL/HTTPS not supported (probably openssl-extension not installed)

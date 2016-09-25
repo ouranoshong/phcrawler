@@ -284,20 +284,20 @@ class Crawler
         $this->createWorkingDirectory();
 
         // Setup url-cache
-        if ($this->url_cache_type == UrlCacheTypes::URLCACHE_SQLITE)
+        if ($this->url_cache_type == UrlCacheTypes::SQLITE)
             $this->LinkCache = new SQLiteUrlCache($this->working_directory."urlcache.db3", true);
         else
             $this->LinkCache = new MemoryUrlCache();
 
         // Perge/cleanup SQLite-urlcache for resumed crawling-processes (only ONCE!)
-        if ($this->url_cache_type == UrlCacheTypes::URLCACHE_SQLITE && $this->urlcache_purged == false)
+        if ($this->url_cache_type == UrlCacheTypes::SQLITE && $this->urlcache_purged == false)
         {
             $this->LinkCache->purgeCache();
             $this->urlcache_purged = true;
         }
 
         // Setup cookie-cache (use SQLite-cache if crawler runs multi-processed)
-        if ($this->url_cache_type == UrlCacheTypes::URLCACHE_SQLITE)
+        if ($this->url_cache_type == UrlCacheTypes::SQLITE)
             $this->CookieCache = new SQLiteCookieCache($this->working_directory."cookiecache.db3", true);
         else $this->CookieCache = new MemoryCookieCache();
 
@@ -309,7 +309,7 @@ class Crawler
         $this->setupCrawlerStatusHandler();
 
         // DocumentInfo-Queue
-        if ($this->multiprocess_mode == MultiProcessModes::MPMODE_PARENT_EXECUTES_USERCODE)
+        if ($this->multiprocess_mode == MultiProcessModes::PARENT_EXECUTES_USER_CODE)
             $this->DocumentInfoQueue = new DocumentInfoQueue($this->working_directory."doc_queue.db3", true);
 
         // Set tmp-file for PageRequest
@@ -384,7 +384,7 @@ class Crawler
         Benchmark::start("crawling_process");
 
         // Set url-cache-type to sqlite.
-        $this->url_cache_type = UrlCacheTypes::URLCACHE_SQLITE;
+        $this->url_cache_type = UrlCacheTypes::SQLITE;
 
         // Init process
         $this->initCrawlerProcess();
@@ -417,7 +417,7 @@ class Crawler
         $this->child_pids = $this->ProcessHandler->getChildPIDs($process_count);
 
         // If crawler runs in MPMODE_PARENT_EXECUTES_USERCODE-mode -> start controller-loop
-        if ($this->multiprocess_mode == MultiProcessModes::MPMODE_PARENT_EXECUTES_USERCODE)
+        if ($this->multiprocess_mode == MultiProcessModes::PARENT_EXECUTES_USER_CODE)
         {
             $this->startControllerProcessLoop();
         }
@@ -443,7 +443,7 @@ class Crawler
     protected function startControllerProcessLoop()
     {
         // If multiprocess-mode is not MPMODE_PARENT_EXECUTES_USERCODE -> exit process
-        if ($this->multiprocess_mode != MultiProcessModes::MPMODE_PARENT_EXECUTES_USERCODE) exit;
+        if ($this->multiprocess_mode != MultiProcessModes::PARENT_EXECUTES_USER_CODE) exit;
 
         $this->initCrawlerProcess();
         $this->initChildProcess();
@@ -465,7 +465,7 @@ class Crawler
                 // If there are nor more links in cache AND there are no more DocInfo-objects in queue -> passedthrough
                 if ($this->LinkCache->containsURLs() == false && $this->DocumentInfoQueue->getDocumentInfoCount() == 0)
                 {
-                    $this->CrawlerStatusHandler->updateCrawlerStatus(null, AbortReasons::ABORTREASON_PASSEDTHROUGH);
+                    $this->CrawlerStatusHandler->updateCrawlerStatus(null, AbortReasons::PASSED_THROUGH);
                 }
 
                 usleep(100000);
@@ -492,7 +492,7 @@ class Crawler
 
             // Update status if user aborted process
             if ($user_abort == true)
-                $this->CrawlerStatusHandler->updateCrawlerStatus(null, AbortReasons::ABORTREASON_USERABORT);
+                $this->CrawlerStatusHandler->updateCrawlerStatus(null, AbortReasons::USER_ABORT);
         }
     }
 
@@ -531,13 +531,13 @@ class Crawler
                 usleep(500000);
             }
 
-            if ($this->multiprocess_mode != MultiProcessModes::MPMODE_PARENT_EXECUTES_USERCODE)
+            if ($this->multiprocess_mode != MultiProcessModes::PARENT_EXECUTES_USER_CODE)
             {
                 // If there's nothing more to do
                 if ($this->LinkCache->containsURLs() == false)
                 {
                     $stop_crawling = true;
-                    $this->CrawlerStatusHandler->updateCrawlerStatus(null, AbortReasons::ABORTREASON_PASSEDTHROUGH);
+                    $this->CrawlerStatusHandler->updateCrawlerStatus(null, AbortReasons::PASSED_THROUGH);
                 }
 
                 // Check for abort form other processes
@@ -548,7 +548,7 @@ class Crawler
         // Loop enden gere. If child-process -> kill it
         if ($this->is_chlid_process == true)
         {
-            if ($this->multiprocess_mode == MultiProcessModes::MPMODE_PARENT_EXECUTES_USERCODE) return;
+            if ($this->multiprocess_mode == MultiProcessModes::PARENT_EXECUTES_USER_CODE) return;
             else exit;
         }
 
@@ -573,7 +573,7 @@ class Crawler
     protected function processUrl(URLDescriptor $UrlDescriptor)
     {
         // Check for abortion from other processes first if mode is MPMODE_CHILDS_EXECUTES_USERCODE
-        if ($this->multiprocess_mode == MultiProcessModes::MPMODE_CHILDS_EXECUTES_USERCODE)
+        if ($this->multiprocess_mode == MultiProcessModes::CHILDS_EXECUTES_USER_CODE)
         {
             // Check for abortion (any limit reached?)
             if ($this->checkForAbort() !== null) return true;
@@ -615,7 +615,7 @@ class Crawler
         $PageInfo->benchmarks = Benchmark::getAllBenchmarks();
 
         // Call user-methods, update craler-status and check for abortion here if crawler doesn't run in MPMODE_PARENT_EXECUTES_USERCODE
-        if ($this->multiprocess_mode != MultiProcessModes::MPMODE_PARENT_EXECUTES_USERCODE)
+        if ($this->multiprocess_mode != MultiProcessModes::PARENT_EXECUTES_USER_CODE)
         {
             // Check for abortion (any limit reached?)
             if ($this->checkForAbort() !== null) return true;
@@ -640,7 +640,7 @@ class Crawler
             // Update status if user aborted process
             if ($user_abort == true)
             {
-                $this->CrawlerStatusHandler->updateCrawlerStatus(null, AbortReasons::ABORTREASON_USERABORT);
+                $this->CrawlerStatusHandler->updateCrawlerStatus(null, AbortReasons::USER_ABORT);
             }
 
             // Check for abortion again (any limit reached?)
@@ -648,7 +648,7 @@ class Crawler
         }
 
         // Add document to the DocumentInfoQueue if mode is MPMODE_PARENT_EXECUTES_USERCODE
-        if ($this->multiprocess_mode == MultiProcessModes::MPMODE_PARENT_EXECUTES_USERCODE)
+        if ($this->multiprocess_mode == MultiProcessModes::PARENT_EXECUTES_USER_CODE)
         {
             $this->DocumentInfoQueue->addDocumentInfo($PageInfo);
         }
@@ -735,7 +735,7 @@ class Crawler
 
         // If traffic-limit is reached
         if ($this->traffic_limit > 0 && $crawler_status->bytes_received >= $this->traffic_limit)
-            $abort_reason = AbortReasons::ABORTREASON_TRAFFICLIMIT_REACHED;
+            $abort_reason = AbortReasons::TRAFFIC_LIMIT_REACHED;
 
         // If request-limit is set
         if ($this->request_limit > 0)
@@ -743,11 +743,11 @@ class Crawler
             // If document-limit regards to received documetns
             if ($this->only_count_received_documents == true && $crawler_status->documents_received >= $this->request_limit)
             {
-                $abort_reason = AbortReasons::ABORTREASON_FILELIMIT_REACHED;
+                $abort_reason = AbortReasons::FILE_LIMIT_REACHED;
             }
             elseif ($this->only_count_received_documents == false && $crawler_status->links_followed >= $this->request_limit)
             {
-                $abort_reason = AbortReasons::ABORTREASON_FILELIMIT_REACHED;
+                $abort_reason = AbortReasons::FILE_LIMIT_REACHED;
             }
         }
 
@@ -789,23 +789,23 @@ class Crawler
     protected function setupCrawlerStatusHandler()
     {
         // Cases the crawlerstatus has to be written to file
-        if ($this->multiprocess_mode == MultiProcessModes::MPMODE_CHILDS_EXECUTES_USERCODE || $this->resumtion_enabled == true)
+        if ($this->multiprocess_mode == MultiProcessModes::CHILDS_EXECUTES_USER_CODE || $this->resumtion_enabled == true)
         {
             $this->CrawlerStatusHandler->write_status_to_file = true;
         }
 
-        if ($this->request_delay_time != null && $this->multiprocess_mode != MultiProcessModes::MPMODE_NONE)
+        if ($this->request_delay_time != null && $this->multiprocess_mode != MultiProcessModes::NONE)
         {
             $this->CrawlerStatusHandler->write_status_to_file = true;
         }
 
         // Cases a crawlerstatus-update has to be locked
-        if ($this->multiprocess_mode == MultiProcessModes::MPMODE_CHILDS_EXECUTES_USERCODE)
+        if ($this->multiprocess_mode == MultiProcessModes::CHILDS_EXECUTES_USER_CODE)
         {
             $this->CrawlerStatusHandler->lock_status_updates = true;
         }
 
-        if ($this->request_delay_time != null && $this->multiprocess_mode != MultiProcessModes::MPMODE_NONE)
+        if ($this->request_delay_time != null && $this->multiprocess_mode != MultiProcessModes::NONE)
         {
             $this->CrawlerStatusHandler->lock_status_updates = true;
         }
@@ -844,7 +844,7 @@ class Crawler
         Utils::rmDir($this->working_directory);
 
         // Remove semaphore (if multiprocess-mode)
-        if ($this->multiprocess_mode != MultiProcessModes::MPMODE_NONE)
+        if ($this->multiprocess_mode != MultiProcessModes::NONE)
         {
             $sem_key = sem_get($this->crawler_uniqid);
             sem_remove($sem_key);
@@ -876,13 +876,13 @@ class Crawler
         // Process abort-reason
         $Report->abort_reason = $CrawlerStatus->abort_reason;
 
-        if ($CrawlerStatus->abort_reason == AbortReasons::ABORTREASON_TRAFFICLIMIT_REACHED)
+        if ($CrawlerStatus->abort_reason == AbortReasons::TRAFFIC_LIMIT_REACHED)
             $Report->traffic_limit_reached = true;
 
-        if ($CrawlerStatus->abort_reason == AbortReasons::ABORTREASON_FILELIMIT_REACHED)
+        if ($CrawlerStatus->abort_reason == AbortReasons::FILE_LIMIT_REACHED)
             $Report->file_limit_reached = true;
 
-        if ($CrawlerStatus->abort_reason == AbortReasons::ABORTREASON_USERABORT)
+        if ($CrawlerStatus->abort_reason == AbortReasons::USER_ABORT)
             $Report->user_abort = true;
 
         // Peak memory-usage
@@ -1736,7 +1736,7 @@ class Crawler
     public function enableResumption()
     {
         $this->resumtion_enabled = true;
-        $this->setUrlCacheType(UrlCacheTypes::URLCACHE_SQLITE);
+        $this->setUrlCacheType(UrlCacheTypes::SQLITE);
     }
 
     /**

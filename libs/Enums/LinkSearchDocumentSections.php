@@ -9,7 +9,7 @@
 namespace PhCrawler\Enums;
 
 
-class LinkSearchDocumentSections
+interface LinkSearchDocumentSections
 {
     /**
      * Script-parts of html-documents (<script>...</script>)
