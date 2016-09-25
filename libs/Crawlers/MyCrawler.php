@@ -26,6 +26,8 @@ class MyCrawler extends Crawler
         // Print the refering URL
         echo "Referer-page: ".$DocInfo->referer_url.$lb;
 
+        echo "Header received: ".$DocInfo->header_bytes_received." bytes".$lb;
+
         // Print if the content of the document was be recieved or not
         if ($DocInfo->received == true)
             echo "Content received: ".$DocInfo->bytes_received." bytes".$lb;

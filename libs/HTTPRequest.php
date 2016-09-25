@@ -445,7 +445,7 @@ class HTTPRequest
         $PageInfo->bytes_received = $this->content_bytes_received;
         $PageInfo->header_bytes_received = $this->header_bytes_received;
 
-        $dtr_values = $this->calulateDataTransferRateValues();
+        $dtr_values = $this->calculateDataTransferRateValues();
         if ($dtr_values != null)
         {
             $PageInfo->data_transfer_rate = $dtr_values["data_transfer_rate"];
@@ -461,7 +461,7 @@ class HTTPRequest
     }
 
 
-    protected function calulateDataTransferRateValues()
+    protected function calculateDataTransferRateValues()
     {
         $vals = array();
 

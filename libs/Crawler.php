@@ -268,7 +268,6 @@ class Crawler
     
         $this->UrlFilter = new URLFilter();
         $this->RobotsTxtParser = new RobotsTxtParser();
-        
         $this->UserSendDataCache = new UserSendDataCache();
 
         // Set default temp-dir
@@ -313,7 +312,7 @@ class Crawler
             $this->DocumentInfoQueue = new DocumentInfoQueue($this->working_directory."doc_queue.db3", true);
 
         // Set tmp-file for PageRequest
-        $this->PageRequest->setTmpFile($this->working_directory."phpcrawl_".getmypid().".tmp");
+        $this->PageRequest->setTmpFile($this->working_directory."phcrawl_".getmypid().".tmp");
 
         // Pass url-priorities to link-cache
         $this->LinkCache->addLinkPriorities($this->link_priority_array);
@@ -816,7 +815,7 @@ class Crawler
      */
     protected function createWorkingDirectory()
     {
-        $this->working_directory = $this->working_base_directory."phpcrawl_tmp_".$this->crawler_uniqid.DIRECTORY_SEPARATOR;
+        $this->working_directory = $this->working_base_directory."phcrawler_tmp_".$this->crawler_uniqid.DIRECTORY_SEPARATOR;
 
         // Check if writable
         if (!is_writeable($this->working_base_directory))
