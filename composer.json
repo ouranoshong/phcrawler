@@ -1,0 +1,19 @@
+{
+    "name": "phcrawler/phcrawler",
+    "description": "A website crawler framework component",
+    "authors": [
+        {
+            "name": "ouranoshong",
+            "email": "ouranoshong@outlook.com"
+        }
+    ],
+
+    "autoload": {
+         "psr-4": {
+             "PhCrawler\\": "./libs"
+         }
+    },
+
+    "minimum-stability": "dev",
+    "require": {}
+}
