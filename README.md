@@ -1,2 +1,2 @@
 # phcrawler
-A website cralwer framework
+The core of website crawler framework
