@@ -169,7 +169,8 @@ class HttpRequest
     /**
      * The proxy to use
      *
-     * @var array Array containing the keys "proxy_host", "proxy_port", "proxy_username", "proxy_password".
+     * @var array
+     * Array containing the keys "proxy_host", "proxy_port", "proxy_username", "proxy_password".
      */
     public $proxy;
 
@@ -393,7 +394,7 @@ class HttpRequest
         $DocInfo->url_link_depth = $this->UrlDescriptor->url_link_depth;
 
         // Create header to send
-        $request_header_lines = $this->buildRequestHeader();
+        $request_header_lines = $this->RequestHeader()->buildLines();
         $header_string = trim(implode("", $request_header_lines));
         $DocInfo->header_send = $header_string;
 
@@ -922,11 +923,11 @@ class HttpRequest
 
 
     /**
-     * @return array
+     * @return RequestHeader
      */
-    protected function buildRequestHeader()
+    protected function RequestHeader()
     {
-        return (new RequestHeader($this))->buildLines();
+        return (new RequestHeader($this));
     }
 
 

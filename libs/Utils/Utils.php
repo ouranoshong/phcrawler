@@ -10,7 +10,7 @@ namespace PhCrawler\Utils;
 
 use Exception;
 use PhCrawler\CookieDescriptor;
-use PhCrawler\HTTPRequest;
+use PhCrawler\HttpRequest;
 use PhCrawler\UrlPartsDescriptor;
 
 class Utils

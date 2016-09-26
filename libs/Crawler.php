@@ -39,7 +39,7 @@ class Crawler
     /**
      * The HTTPRequest-Object
      *
-     * @var HTTPRequest
+     * @var HttpRequest
      */
     protected $PageRequest;
 
@@ -262,7 +262,7 @@ class Crawler
         // Create uniqid for this crawlerinstance
         $this->crawler_uniqid = getmypid().time();
 
-        $this->PageRequest = new HTTPRequest();
+        $this->PageRequest = new HttpRequest();
         $this->PageRequest->setHeaderCheckCallbackFunction($this, "handleHeaderInfo");
 
     

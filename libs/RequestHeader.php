@@ -7,6 +7,7 @@
  */
 
 namespace PhCrawler;
+
 use PhCrawler\Enums\HttpProtocols;
 use PhCrawler\Utils\Encoding;
 use PhCrawler\Utils\Utils;
@@ -24,25 +25,43 @@ class RequestHeader
      */
     protected $_Request;
 
-    const SEPARATOR = '\r\n';
+    /**
+     *
+     */
+    const SEPARATOR = "\r\n";
 
+    /**
+     *
+     */
     const METHOD_GET = 'GET';
+    /**
+     *
+     */
     const METHOD_POST = 'POST';
 
+    /**
+     *
+     */
+    const HTTP_VERSION_1_0 = '1.0';
+    /**
+     *
+     */
+    const HTTP_VERSION_1_1 = '1.1';
+
+    /**
+     * @var
+     */
     public $method;
 
-    public $protocol;
-    public $host;
-    public $url;
-    public $file;
-    public $path;
-    public $port;
-    public $query;
+    /**
+     * @var
+     */
+    public $refering_url;
 
-    public $auth_username;
-    public $auth_password;
-    public $proxy_username;
-    public $proxy_password;
+    /**
+     * @var
+     */
+    public $http_protocol_version;
 
 
     /**
@@ -54,110 +73,194 @@ class RequestHeader
     {
         $this->_Request = $Request;
 
-        foreach($this->_Request->url_parts as $key => $value) {
-            if (isset($this->{$key}))  $this->{$key} = $value;
-        }
-
-        foreach($this->_Request->poxy as $key => $value) {
-            if (isset($this->{$key})) $this->{$key} = $value;
-        }
-
+        $this->init($Request);
 
     }
 
-    public function buildLines() {
-        // Create header
-        $headerLines = array();
+    /**
+     * @param \PhCrawler\HttpRequest $Request
+     */
+    public function init(HttpRequest $Request)
+    {
 
+        if (count($Request->post_data) > 0) $this->method = RequestHeader::METHOD_POST;
+        else $this->method = RequestHeader::METHOD_GET;
+
+        if ($Request->http_protocol_version === HttpProtocols::HTTP_1_1) $this->http_protocol_version = RequestHeader::HTTP_VERSION_1_1;
+        else $this->http_protocol_version = RequestHeader::HTTP_VERSION_1_0;
+
+    }
+
+    /**
+     * @return array
+     */
+    public function buildLines()
+    {
+        // Create header
+        $headerLines = [];
+        $headerLines[] = $this->buildFirstLine();
+        $headerLines[] = $this->buildHostLine();
+        $headerLines[] = $this->buildUserAgentLine();
+        $headerLines[] = $this->buildAcceptLine();
+        $headerLines[] = $this->buildAcceptEncodingLine();
+        $headerLines[] = $this->buildReferingUrlLine();
+        $headerLines[] = $this->buildCookieLine();
+        $headerLines[] = $this->buildAuthenticationLine();
+        $headerLines[] = $this->buildProxyAuthorizationLine();
+        $headerLines[] = $this->buildConnectionLine();
+        $headerLines = array_merge($headerLines, $this->buildPostContentLines());
+        return array_values(array_filter($headerLines));
+    }
+
+    /**
+     * @return string
+     */
+    protected function buildFirstLine()
+    {
         $_Request = $this->_Request;
 
-        // Method(GET or POST)
-        if (count($_Request->post_data) > 0) $request_type = RequestHeader::METHOD_POST;
-        else $request_type = RequestHeader::METHOD_POST;
-
-        // HTTP protocol
-        if ($_Request->http_protocol_version == HttpProtocols::HTTP_1_1) $http_protocol_version = "1.1";
-        else $http_protocol_version = "1.0";
-
-        if ($_Request->proxy != null)
-        {
+        if ($_Request->proxy != null) {
             // A Proxy needs the full qualified URL in the GET or POST headerline.
-            $headerLines[] = $request_type." ".$_Request->UrlDescriptor->url_rebuild ." HTTP/1.0\r\n";
-        }
-        else
-        {
-            $query = $this->prepareHTTPRequestQuery();
-            $headerLines[] = $request_type." ".$query." HTTP/".$http_protocol_version."\r\n";
+            $line = $this->method . " " . $_Request->UrlDescriptor->url_rebuild . " HTTP/1.0";
+        } else {
+            $query = $this->buildHttpRequestQuery();
+            $line = $this->method . " " . $query . " HTTP/" . $this->http_protocol_version;
         }
 
-        $headerLines[] = "Host: ".$_Request->url_parts["host"]."\r\n";
+        return $line . self::SEPARATOR;
+    }
 
-        $headerLines[] = "User-Agent: ".str_replace("\n", "", $_Request->userAgentString)."\r\n";
-        $headerLines[] = "Accept: */*\r\n";
 
+    /**
+     * @return string
+     */
+    protected function buildHostLine()
+    {
+        return "Host: " . $this->_Request->url_parts["host"] . self::SEPARATOR;;
+    }
+
+    /**
+     * @return string
+     */
+    protected function buildUserAgentLine()
+    {
+        return "User-Agent: " . str_replace("\n", "", $this->_Request->userAgentString) . self::SEPARATOR;
+    }
+
+    /**
+     * @return string
+     */
+    protected function buildAcceptLine()
+    {
+        return "Accept: */*" . self::SEPARATOR;
+    }
+
+    /**
+     * @return string
+     */
+    protected function buildAcceptEncodingLine()
+    {
         // Request GZIP-content
-        if ($_Request->request_gzip_content == true)
-        {
-            $headerLines[] = "Accept-Encoding: gzip, deflate\r\n";
+        if ($this->_Request->request_gzip_content == true) {
+            return "Accept-Encoding: gzip, deflate" . self::SEPARATOR;
         }
+        return '';
+    }
 
+    /**
+     * @return string
+     */
+    protected function buildReferingUrlLine()
+    {
         // Referer
-        if ($_Request->UrlDescriptor->refering_url != null)
-        {
-            $headerLines[] = "Referer: ".$_Request->UrlDescriptor->refering_url."\r\n";
-        }
+        $refering_url = $this->_Request->UrlDescriptor->refering_url;
 
-        // Cookies
+        if ($refering_url != null) {
+            return "Referer: " . $refering_url . self::SEPARATOR;
+        }
+        return '';
+    }
+
+    /**
+     * @return string
+     */
+    protected function buildCookieLine()
+    {
         $cookie_header = $this->buildCookieHeader();
         if ($cookie_header != null)
-            $headerLines[] = $this->buildCookieHeader();
+            return $cookie_header;
+        return '';
+    }
 
+    /**
+     * @return string
+     */
+    protected function buildAuthenticationLine()
+    {
         // Authentication
-        if ($_Request->url_parts["auth_username"] != "" && $_Request->url_parts["auth_password"] != "")
-        {
-            $auth_string = base64_encode($_Request->url_parts["auth_username"].":".$_Request->url_parts["auth_password"]);
-            $headerLines[] = "Authorization: Basic ".$auth_string."\r\n";
-        }
+        $_Request = $this->_Request;
 
+        if ($_Request->url_parts["auth_username"] != "" && $_Request->url_parts["auth_password"] != "") {
+            $auth_string = base64_encode($_Request->url_parts["auth_username"] . ":" . $_Request->url_parts["auth_password"]);
+            return "Authorization: Basic " . $auth_string . self::SEPARATOR;
+        }
+        return '';
+    }
+
+    /**
+     * @return string
+     */
+    protected function buildProxyAuthorizationLine()
+    {
         // Proxy authentication
-        if ($_Request->proxy != null && $_Request->proxy["proxy_username"] != null)
-        {
-            $auth_string = base64_encode($_Request->proxy["proxy_username"].":".$_Request->proxy["proxy_password"]);
-            $headerLines[] = "Proxy-Authorization: Basic ".$auth_string."\r\n";
+        $_Request = $this->_Request;
+        if ($_Request->proxy != null && $_Request->proxy["proxy_username"] != null) {
+            $auth_string = base64_encode($_Request->proxy["proxy_username"] . ":" . $_Request->proxy["proxy_password"]);
+            return "Proxy-Authorization: Basic " . $auth_string . self::SEPARATOR;
         }
+        return '';
+    }
 
-        $headerLines[] = "Connection: close\r\n";
+    /**
+     * @return string
+     */
+    protected function buildConnectionLine()
+    {
+        return "Connection: close" . self::SEPARATOR;
+    }
 
+    /**
+     * @return array
+     */
+    protected function buildPostContentLines()
+    {
         // Wenn POST-Request
-        if ($request_type == RequestHeader::METHOD_POST)
-        {
+        $headerLines = [];
+
+        if ($this->method == RequestHeader::METHOD_POST) {
             // Post-Content bauen
             $post_content = $this->buildPostContent();
 
-            $headerLines[] = "Content-Type: multipart/form-data; boundary=---------------------------10786153015124\r\n";
-            $headerLines[] = "Content-Length: ".strlen($post_content)."\r\n\r\n";
+            $headerLines[] = "Content-Type: multipart/form-data; boundary=---------------------------10786153015124".self::SEPARATOR;
+            $headerLines[] = "Content-Length: " . strlen($post_content) . (self::SEPARATOR.self::SEPARATOR);
             $headerLines[] = $post_content;
-        }
-        else
-        {
-            $headerLines[] = "\r\n";
+        } else {
+            $headerLines[] = self::SEPARATOR;
         }
 
         return $headerLines;
     }
 
-
     /**
      *
      * @return mixed|string
      */
-    public function prepareHTTPRequestQuery()
+    protected function buildHttpRequestQuery()
     {
         $_Request = $this->_Request;
-        $query = $_Request->url_parts["path"].$_Request->url_parts["file"].$_Request->url_parts["query"];
+        $query = $_Request->url_parts["path"] . $_Request->url_parts["file"] . $_Request->url_parts["query"];
         // If string already is a valid URL -> do nothing
-        if (Utils::isValidUrlString($query))
-        {
+        if (Utils::isValidUrlString($query)) {
             return $query;
         }
 
@@ -166,12 +269,9 @@ class RequestHeader
 
         // if query is already utf-8 encoded -> simply urlencode it,
         // otherwise encode it to utf8 first.
-        if (Encoding::isUTF8String($query) == true)
-        {
+        if (Encoding::isUTF8String($query) == true) {
             $query = rawurlencode($query);
-        }
-        else
-        {
+        } else {
             $query = rawurlencode(utf8_encode($query));
         }
 
@@ -190,22 +290,18 @@ class RequestHeader
      * @return string  The cookie-header-part, i.e. "Cookie: test=bla; palimm=palaber"
      *                 Returns NULL if no cookies should be send with the header.
      */
-    public function buildCookieHeader()
+    protected function buildCookieHeader()
     {
         $cookie_string = "";
 
         @reset($this->_Request->cookie_array);
-        while(list($key, $value) = @each($this->_Request->cookie_array))
-        {
-            $cookie_string .= "; ".$key."=".$value."";
+        while (list($key, $value) = @each($this->_Request->cookie_array)) {
+            $cookie_string .= "; " . $key . "=" . $value . "";
         }
 
-        if ($cookie_string != "")
-        {
-            return "Cookie: ".substr($cookie_string, 2)."\r\n";
-        }
-        else
-        {
+        if ($cookie_string != "") {
+            return "Cookie: " . substr($cookie_string, 2) . self::SEPARATOR;
+        } else {
             return null;
         }
     }
@@ -215,22 +311,24 @@ class RequestHeader
      *
      * @return array  Numeric array containing the lines of the POST-part for the header
      */
-    public function buildPostContent()
+    protected function buildPostContent()
     {
         $_Request = $this->_Request;
-
         $post_content = "";
 
         // Post-Data
         @reset($_Request->post_data);
-        while (list($key, $value) = @each($_Request->post_data))
-        {
-            $post_content .= "-----------------------------10786153015124\r\n";
-            $post_content .= "Content-Disposition: form-data; name=\"".$key."\"\r\n\r\n";
-            $post_content .= $value."\r\n";
+        while (list($key, $value) = @each($_Request->post_data)) {
+            $post_content .= "-----------------------------10786153015124";
+            $post_content .= self::SEPARATOR;
+            $post_content .= "Content-Disposition: form-data; name=\"" . $key . "\"";
+            $post_content .= self::SEPARATOR . self::SEPARATOR;
+            $post_content .= $value;
+            $post_content .= self::SEPARATOR;
         }
 
-        $post_content .= "-----------------------------10786153015124\r\n";
+        $post_content .= "-----------------------------10786153015124";
+        $post_content .= self::SEPARATOR;
 
         return $post_content;
     }
