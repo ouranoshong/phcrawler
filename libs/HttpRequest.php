@@ -9,17 +9,22 @@
 namespace PhCrawler;
 
 use Exception;
-use PhCrawler\Enums\HTTPProtocols;
+use PhCrawler\Enums\HttpProtocols;
 use PhCrawler\Enums\RequestErrors;
 use PhCrawler\Utils\Encoding;
 use PhCrawler\Utils\Utils;
 
-class HTTPRequest
+/**
+ * Class HttpRequest
+ *
+ * @package PhCrawler
+ */
+class HttpRequest
 {
     /**
      * The user-agent-string
      */
-    public $userAgentString = "PHPCrawl";
+    public $userAgentString = "PhCrawler";
 
     /**
      * The HTTP protocol version to use.
@@ -105,28 +110,28 @@ class HTTPRequest
      *
      * @var array Numeric array conatining the regex-rules
      */
-    protected $linksearch_content_types = array("#text/html# i");
+    protected $link_search_content_types = array("#text/html# i");
 
     /**
      * The TMP-File to use when a page/file should be streamed to file.
      *
      * @var string
      */
-    protected $tmpFile = "phpcrawl.tmp";
+    protected $tmpFile = "phCrawler.tmp";
 
     /**
      * The URL for the request as URLDescriptor-object
      *
      * @var URLDescriptor
      */
-    protected $UrlDescriptor;
+    public $UrlDescriptor;
 
     /**
      * The parts of the URL for the request as returned by Utils::splitURL()
      *
      * @var array
      */
-    protected $url_parts = array();
+    public $url_parts = array();
 
     /**
      * DNS-cache
@@ -152,21 +157,21 @@ class HTTPRequest
      *
      * @array
      */
-    protected $cookie_array = array();
+    public $cookie_data = array();
 
     /**
      * Array containing POST-data to send with the request
      *
      * @var array
      */
-    protected $post_data = array();
+    public $post_data = array();
 
     /**
      * The proxy to use
      *
      * @var array Array containing the keys "proxy_host", "proxy_port", "proxy_username", "proxy_password".
      */
-    protected $proxy;
+    public $proxy;
 
     /**
      * The socket used for HTTP-requests
@@ -176,25 +181,42 @@ class HTTPRequest
     /**
      * The bytes contained in the socket-buffer directly after the server responded
      */
-    protected $socket_prefill_size;
+    protected $socket_pre_fill_size;
 
     /**
      * Enalbe/disable request for gzip encoded content.
      */
-    protected $request_gzip_content = false;
+    public $request_gzip_content = false;
 
+    /**
+     * @var null | \Closure
+     */
     protected $header_check_callback_function = null;
 
+    /**
+     * @var int
+     */
     protected $content_buffer_size = 200000;
+    /**
+     * @var int
+     */
     protected $chunk_buffer_size = 20240;
+    /**
+     * @var int
+     */
     protected $socket_read_buffer_size = 1024;
+    /**
+     * @var int
+     */
     protected $source_overlap_size = 1500;
 
+    /**
+     * HttpRequest constructor.
+     */
     public function __construct()
     {
        $this->LinkFinder = new LinkFinder();
        $this->DNSCache = new DNSCache();
-
     }
 
     /**
@@ -218,7 +240,7 @@ class HTTPRequest
      */
     public function addCookie($name, $value)
     {
-        $this->cookie_array[$name] = $value;
+        $this->cookie_data[$name] = $value;
     }
 
     /**
@@ -250,7 +272,7 @@ class HTTPRequest
      */
     public function clearCookies()
     {
-        $this->cookie_array = array();
+        $this->cookie_data = array();
     }
 
     /**
@@ -268,6 +290,11 @@ class HTTPRequest
     }
 
 
+    /**
+     * @param $mode
+     *
+     * @return bool
+     */
     public function setFindRedirectURLs($mode)
     {
         if (!is_bool($mode)) return false;
@@ -277,6 +304,10 @@ class HTTPRequest
         return true;
     }
 
+    /**
+     * @param $key
+     * @param $value
+     */
     public function addPostData($key, $value)
     {
         $this->post_data[$key] = $value;
@@ -290,6 +321,12 @@ class HTTPRequest
         $this->post_data = array();
     }
 
+    /**
+     * @param      $proxy_host
+     * @param      $proxy_port
+     * @param null $proxy_username
+     * @param null $proxy_password
+     */
     public function setProxy($proxy_host, $proxy_port, $proxy_username = null, $proxy_password = null)
     {
         $this->proxy = array();
@@ -300,6 +337,10 @@ class HTTPRequest
     }
 
 
+    /**
+     * @param $username
+     * @param $password
+     */
     public function setBasicAuthentication($username, $password)
     {
         $this->url_parts["auth_username"] = $username;
@@ -320,12 +361,20 @@ class HTTPRequest
         return true;
     }
 
+    /**
+     * @param $obj
+     * @param $method_name
+     */
     public function setHeaderCheckCallbackFunction(&$obj, $method_name)
     {
         $this->header_check_callback_function = array($obj, $method_name);
     }
 
 
+    /**
+     * @return \PhCrawler\DocumentInfo
+     * @throws \Exception
+     */
     public function sendRequest()
     {
         // Prepare LinkFinder
@@ -333,137 +382,140 @@ class HTTPRequest
         $this->LinkFinder->setSourceUrl($this->UrlDescriptor);
 
         // Initiate the Response-object and pass base-infos
-        $PageInfo = new DocumentInfo();
-        $PageInfo->url = $this->UrlDescriptor->url_rebuild;
-        $PageInfo->protocol = $this->url_parts["protocol"];
-        $PageInfo->host = $this->url_parts["host"];
-        $PageInfo->path = $this->url_parts["path"];
-        $PageInfo->file = $this->url_parts["file"];
-        $PageInfo->query = $this->url_parts["query"];
-        $PageInfo->port = $this->url_parts["port"];
-        $PageInfo->url_link_depth = $this->UrlDescriptor->url_link_depth;
+        $DocInfo = new DocumentInfo();
+        $DocInfo->url = $this->UrlDescriptor->url_rebuild;
+        $DocInfo->protocol = $this->url_parts["protocol"];
+        $DocInfo->host = $this->url_parts["host"];
+        $DocInfo->path = $this->url_parts["path"];
+        $DocInfo->file = $this->url_parts["file"];
+        $DocInfo->query = $this->url_parts["query"];
+        $DocInfo->port = $this->url_parts["port"];
+        $DocInfo->url_link_depth = $this->UrlDescriptor->url_link_depth;
 
         // Create header to send
         $request_header_lines = $this->buildRequestHeader();
         $header_string = trim(implode("", $request_header_lines));
-        $PageInfo->header_send = $header_string;
+        $DocInfo->header_send = $header_string;
 
         // Open socket
-        $this->openSocket($PageInfo->error_code, $PageInfo->error_string);
-        $PageInfo->server_connect_time = $this->server_connect_time;
+        $this->openSocket($DocInfo->error_code, $DocInfo->error_string);
+        $DocInfo->server_connect_time = $this->server_connect_time;
 
         // If error occured
-        if ($PageInfo->error_code != null)
+        if ($DocInfo->error_code != null)
         {
             // If proxy-error -> throw exception
-            if ($PageInfo->error_code == RequestErrors::ERROR_PROXY_UNREACHABLE)
+            if ($DocInfo->error_code == RequestErrors::ERROR_PROXY_UNREACHABLE)
             {
                 throw new Exception("Unable to connect to proxy '".$this->proxy["proxy_host"]."' on port '".$this->proxy["proxy_port"]."'");
             }
 
-            $PageInfo->error_occured = true;
-            return $PageInfo;
+            $DocInfo->error_occured = true;
+            return $DocInfo;
         }
 
         // Send request
         $this->sendRequestHeader($request_header_lines);
 
         // Read response-header
-        $response_header = $this->readResponseHeader($PageInfo->error_code, $PageInfo->error_string);
-        $PageInfo->server_response_time = $this->server_response_time;
+        $response_header = $this->readResponseHeader($DocInfo->error_code, $DocInfo->error_string);
+        $DocInfo->server_response_time = $this->server_response_time;
 
         // If error occured
-        if ($PageInfo->error_code != null)
+        if ($DocInfo->error_code != null)
         {
-            $PageInfo->error_occured = true;
-            return $PageInfo;
+            $DocInfo->error_occured = true;
+            return $DocInfo;
         }
 
         // Set header-infos
         $this->lastResponseHeader = new ResponseHeader($response_header, $this->UrlDescriptor->url_rebuild);
-        $PageInfo->responseHeader = $this->lastResponseHeader;
-        $PageInfo->header = $this->lastResponseHeader->header_raw;
-        $PageInfo->http_status_code = $this->lastResponseHeader->http_status_code;
-        $PageInfo->content_type = $this->lastResponseHeader->content_type;
-        $PageInfo->cookies = $this->lastResponseHeader->cookies;
+        $DocInfo->responseHeader = $this->lastResponseHeader;
+        $DocInfo->header = $this->lastResponseHeader->header_raw;
+        $DocInfo->http_status_code = $this->lastResponseHeader->http_status_code;
+        $DocInfo->content_type = $this->lastResponseHeader->content_type;
+        $DocInfo->cookies = $this->lastResponseHeader->cookies;
 
         // Referer-Infos
         if ($this->UrlDescriptor->refering_url != null)
         {
-            $PageInfo->referer_url = $this->UrlDescriptor->refering_url;
-            $PageInfo->refering_linkcode = $this->UrlDescriptor->linkcode;
-            $PageInfo->refering_link_raw = $this->UrlDescriptor->link_raw;
-            $PageInfo->refering_linktext = $this->UrlDescriptor->linktext;
+            $DocInfo->referer_url = $this->UrlDescriptor->refering_url;
+            $DocInfo->refering_linkcode = $this->UrlDescriptor->linkcode;
+            $DocInfo->refering_link_raw = $this->UrlDescriptor->link_raw;
+            $DocInfo->refering_linktext = $this->UrlDescriptor->linktext;
         }
 
         // Check if content should be received
-        $receive = $this->decideRecevieContent($this->lastResponseHeader);
+        $receive = $this->decideReceiveContent($this->lastResponseHeader);
 
         if ($receive == false)
         {
             @fclose($this->socket);
-            $PageInfo->received = false;
-            $PageInfo->links_found_url_descriptors = $this->LinkFinder->getAllURLs(); // Maybe found a link/redirect in the header
-            $PageInfo->meta_attributes = $this->LinkFinder->getAllMetaAttributes();
-            return $PageInfo;
+            $DocInfo->received = false;
+            $DocInfo->links_found_url_descriptors = $this->LinkFinder->getAllURLs(); // Maybe found a link/redirect in the header
+            $DocInfo->meta_attributes = $this->LinkFinder->getAllMetaAttributes();
+            return $DocInfo;
         }
         else
         {
-            $PageInfo->received = true;
+            $DocInfo->received = true;
         }
 
         // Check if content should be streamd to file
         $stream_to_file = $this->decideStreamToFile($response_header);
 
         // Read content
-        $response_content = $this->readResponseContent($stream_to_file, $PageInfo->error_code, $PageInfo->error_string, $PageInfo->received_completely);
+        $response_content = $this->readResponseContent($stream_to_file, $DocInfo->error_code, $DocInfo->error_string, $DocInfo->received_completely);
 
         // If error occured
-        if ($PageInfo->error_code != null)
+        if ($DocInfo->error_code != null)
         {
-            $PageInfo->error_occured = true;
+            $DocInfo->error_occured = true;
         }
 
         @fclose($this->socket);
 
         // Complete ResponseObject
-        $PageInfo->content = $response_content;
-        $PageInfo->source = &$PageInfo->content;
-        $PageInfo->received_completly = $PageInfo->received_completely;
+        $DocInfo->content = $response_content;
+        $DocInfo->source = &$DocInfo->content;
+        $DocInfo->received_completly = $DocInfo->received_completely;
 
         if ($stream_to_file == true)
         {
-            $PageInfo->received_to_file = true;
-            $PageInfo->content_tmp_file = $this->tmpFile;
+            $DocInfo->received_to_file = true;
+            $DocInfo->content_tmp_file = $this->tmpFile;
         }
-        else $PageInfo->received_to_memory = true;
+        else $DocInfo->received_to_memory = true;
 
-        $PageInfo->links_found_url_descriptors = $this->LinkFinder->getAllURLs();
-        $PageInfo->meta_attributes = $this->LinkFinder->getAllMetaAttributes();
+        $DocInfo->links_found_url_descriptors = $this->LinkFinder->getAllURLs();
+        $DocInfo->meta_attributes = $this->LinkFinder->getAllMetaAttributes();
 
         // Info about received bytes
-        $PageInfo->bytes_received = $this->content_bytes_received;
-        $PageInfo->header_bytes_received = $this->header_bytes_received;
+        $DocInfo->bytes_received = $this->content_bytes_received;
+        $DocInfo->header_bytes_received = $this->header_bytes_received;
 
         $dtr_values = $this->calculateDataTransferRateValues();
         if ($dtr_values != null)
         {
-            $PageInfo->data_transfer_rate = $dtr_values["data_transfer_rate"];
-            $PageInfo->unbuffered_bytes_read = $dtr_values["unbuffered_bytes_read"];
-            $PageInfo->data_transfer_time = $dtr_values["data_transfer_time"];
+            $DocInfo->data_transfer_rate = $dtr_values["data_transfer_rate"];
+            $DocInfo->unbuffered_bytes_read = $dtr_values["unbuffered_bytes_read"];
+            $DocInfo->data_transfer_time = $dtr_values["data_transfer_time"];
         }
 
-        $PageInfo->setLinksFoundArray();
+        $DocInfo->setLinksFoundArray();
 
         $this->LinkFinder->resetLinkCache();
 
-        return $PageInfo;
+        return $DocInfo;
     }
 
 
+    /**
+     * @return array|null
+     */
     protected function calculateDataTransferRateValues()
     {
-        $vals = array();
+        $dataValues = array();
 
         // Works like this:
         // After the server resonded, the socket-buffer is already filled with bytes,
@@ -471,18 +523,18 @@ class HTTPRequest
 
         // To calulate the real data transfer rate, these bytes have to be substractred from the received
         // bytes beofre calulating the rate.
-        if ($this->data_transfer_time > 0 && $this->content_bytes_received > 4 * $this->socket_prefill_size)
+        if ($this->data_transfer_time > 0 && $this->content_bytes_received > 4 * $this->socket_pre_fill_size)
         {
-            $vals["unbuffered_bytes_read"] = $this->content_bytes_received + $this->header_bytes_received - $this->socket_prefill_size;
-            $vals["data_transfer_rate"] = $vals["unbuffered_bytes_read"] / $this->data_transfer_time;
-            $vals["data_transfer_time"] = $this->data_transfer_time;
+            $dataValues["unbuffered_bytes_read"] = $this->content_bytes_received + $this->header_bytes_received - $this->socket_pre_fill_size;
+            $dataValues["data_transfer_rate"] = $dataValues["unbuffered_bytes_read"] / $this->data_transfer_time;
+            $dataValues["data_transfer_time"] = $this->data_transfer_time;
         }
         else
         {
-            $vals = null;
+            $dataValues = null;
         }
 
-        return $vals;
+        return $dataValues;
     }
 
     /**
@@ -562,6 +614,9 @@ class HTTPRequest
     }
 
 
+    /**
+     * @param $request_header_lines
+     */
     protected function sendRequestHeader($request_header_lines)
     {
         // Header senden
@@ -605,7 +660,7 @@ class HTTPRequest
 
                 // Determinate socket prefill size
                 $status = socket_get_status($this->socket);
-                $this->socket_prefill_size = $status["unread_bytes"];
+                $this->socket_pre_fill_size = $status["unread_bytes"];
 
                 // Start data-transfer-time bechmark
                 Benchmark::reset("data_transfer_time");
@@ -738,7 +793,7 @@ class HTTPRequest
             // Find links in portion of the source
             if (($gzip_encoded_content == false && $stream_to_file == false && strlen($source_portion) >= $this->content_buffer_size) || $document_completed == true)
             {
-                if (Utils::checkStringAgainstRegexArray($this->lastResponseHeader->content_type, $this->linksearch_content_types))
+                if (Utils::checkStringAgainstRegexArray($this->lastResponseHeader->content_type, $this->link_search_content_types))
                 {
                     Benchmark::stop("data_transfer_time");
                     $this->LinkFinder->findLinksInHTMLChunk($source_portion);
@@ -763,6 +818,14 @@ class HTTPRequest
     }
 
 
+    /**
+     * @param $document_completed
+     * @param $error_code
+     * @param $error_string
+     * @param $document_received_completely
+     *
+     * @return string
+     */
     protected function readResponseContentChunk(&$document_completed, &$error_code, &$error_string, &$document_received_completely)
     {
         $source_chunk = "";
@@ -771,7 +834,7 @@ class HTTPRequest
         $document_completed = false;
 
         // If chunked encoding and protocol to use is HTTP 1.1
-        if ($this->http_protocol_version == HTTPProtocols::HTTP_1_1 && $this->lastResponseHeader->transfer_encoding == "chunked")
+        if ($this->http_protocol_version == HttpProtocols::HTTP_1_1 && $this->lastResponseHeader->transfer_encoding == "chunked")
         {
             // Read size of next chunk
             $chunk_line = @fgets($this->socket, 128);
@@ -858,166 +921,14 @@ class HTTPRequest
     }
 
 
+    /**
+     * @return array
+     */
     protected function buildRequestHeader()
     {
-        // Create header
-        $headerlines = array();
-
-        // Methode(GET or POST)
-        if (count($this->post_data) > 0) $request_type = "POST";
-        else $request_type = "GET";
-
-        // HTTP protocol
-        if ($this->http_protocol_version == HTTPProtocols::HTTP_1_1) $http_protocol_verison = "1.1";
-        else $http_protocol_verison = "1.0";
-
-        if ($this->proxy != null)
-        {
-            // A Proxy needs the full qualified URL in the GET or POST headerline.
-            $headerlines[] = $request_type." ".$this->UrlDescriptor->url_rebuild ." HTTP/1.0\r\n";
-        }
-        else
-        {
-            $query = $this->prepareHTTPRequestQuery($this->url_parts["path"].$this->url_parts["file"].$this->url_parts["query"]);
-            $headerlines[] = $request_type." ".$query." HTTP/".$http_protocol_verison."\r\n";
-        }
-
-        $headerlines[] = "Host: ".$this->url_parts["host"]."\r\n";
-
-        $headerlines[] = "User-Agent: ".str_replace("\n", "", $this->userAgentString)."\r\n";
-        $headerlines[] = "Accept: */*\r\n";
-
-        // Request GZIP-content
-        if ($this->request_gzip_content == true)
-        {
-            $headerlines[] = "Accept-Encoding: gzip, deflate\r\n";
-        }
-
-        // Referer
-        if ($this->UrlDescriptor->refering_url != null)
-        {
-            $headerlines[] = "Referer: ".$this->UrlDescriptor->refering_url."\r\n";
-        }
-
-        // Cookies
-        $cookie_header = $this->buildCookieHeader();
-        if ($cookie_header != null)
-            $headerlines[] = $this->buildCookieHeader();
-
-        // Authentication
-        if ($this->url_parts["auth_username"] != "" && $this->url_parts["auth_password"] != "")
-        {
-            $auth_string = base64_encode($this->url_parts["auth_username"].":".$this->url_parts["auth_password"]);
-            $headerlines[] = "Authorization: Basic ".$auth_string."\r\n";
-        }
-
-        // Proxy authentication
-        if ($this->proxy != null && $this->proxy["proxy_username"] != null)
-        {
-            $auth_string = base64_encode($this->proxy["proxy_username"].":".$this->proxy["proxy_password"]);
-            $headerlines[] = "Proxy-Authorization: Basic ".$auth_string."\r\n";
-        }
-
-        $headerlines[] = "Connection: close\r\n";
-
-        // Wenn POST-Request
-        if ($request_type == "POST")
-        {
-            // Post-Content bauen
-            $post_content = $this->buildPostContent();
-
-            $headerlines[] = "Content-Type: multipart/form-data; boundary=---------------------------10786153015124\r\n";
-            $headerlines[] = "Content-Length: ".strlen($post_content)."\r\n\r\n";
-            $headerlines[] = $post_content;
-        }
-        else
-        {
-            $headerlines[] = "\r\n";
-        }
-
-        return $headerlines;
+        return (new RequestHeader($this))->buildLines();
     }
 
-
-    protected function prepareHTTPRequestQuery($query)
-    {
-        // If string already is a valid URL -> do nothing
-        if (Utils::isValidUrlString($query))
-        {
-            return $query;
-        }
-
-        // Decode query-string (for URLs that are partly urlencoded and partly not)
-        $query = rawurldecode($query);
-
-        // if query is already utf-8 encoded -> simply urlencode it,
-        // otherwise encode it to utf8 first.
-        if (Encoding::isUTF8String($query) == true)
-        {
-            $query = rawurlencode($query);
-        }
-        else
-        {
-            $query = rawurlencode(utf8_encode($query));
-        }
-
-        // Replace url-specific signs back
-        $query = str_replace("%2F", "/", $query);
-        $query = str_replace("%3F", "?", $query);
-        $query = str_replace("%3D", "=", $query);
-        $query = str_replace("%26", "&", $query);
-
-        return $query;
-    }
-
-    /**
-     * Builds the post-content from the postdata-array for the header to send with the request (MIME-style)
-     *
-     * @return array  Numeric array containing the lines of the POST-part for the header
-     */
-    protected function buildPostContent()
-    {
-        $post_content = "";
-
-        // Post-Data
-        @reset($this->post_data);
-        while (list($key, $value) = @each($this->post_data))
-        {
-            $post_content .= "-----------------------------10786153015124\r\n";
-            $post_content .= "Content-Disposition: form-data; name=\"".$key."\"\r\n\r\n";
-            $post_content .= $value."\r\n";
-        }
-
-        $post_content .= "-----------------------------10786153015124\r\n";
-
-        return $post_content;
-    }
-
-    /**
-     * Builds the cookie-header-part for the header to send.
-     *
-     * @return string  The cookie-header-part, i.e. "Cookie: test=bla; palimm=palaber"
-     *                 Returns NULL if no cookies should be send with the header.
-     */
-    protected function buildCookieHeader()
-    {
-        $cookie_string = "";
-
-        @reset($this->cookie_array);
-        while(list($key, $value) = @each($this->cookie_array))
-        {
-            $cookie_string .= "; ".$key."=".$value."";
-        }
-
-        if ($cookie_string != "")
-        {
-            return "Cookie: ".substr($cookie_string, 2)."\r\n";
-        }
-        else
-        {
-            return null;
-        }
-    }
 
     /**
      * Checks whether the content of this page/file should be received (based on the content-type, http-status-code,
@@ -1026,7 +937,7 @@ class HTTPRequest
      * @param ResponseHeader $responseHeader The response-header as an ResponseHeader-object
      * @return bool TRUE if the content should be received
      */
-    protected function decideRecevieContent(ResponseHeader $responseHeader)
+    protected function decideReceiveContent(ResponseHeader $responseHeader)
     {
         // Get Content-Type from header
         $content_type = $responseHeader->content_type;
@@ -1116,6 +1027,11 @@ class HTTPRequest
     }
 
 
+    /**
+     * @param $tmp_file
+     *
+     * @return bool
+     */
     public function setTmpFile($tmp_file)
     {
         //Check if writable
@@ -1171,11 +1087,16 @@ class HTTPRequest
         $check = Utils::checkRegexPattern($regex); // Check pattern
         if ($check == true)
         {
-            $this->linksearch_content_types[] = trim($regex);
+            $this->link_search_content_types[] = trim($regex);
         }
         return $check;
     }
 
+    /**
+     * @param $http_protocol_version
+     *
+     * @return bool
+     */
     public function setHTTPProtocolVersion($http_protocol_version)
     {
         if (preg_match("#[1-2]#", $http_protocol_version))
@@ -1186,6 +1107,9 @@ class HTTPRequest
         else return false;
     }
 
+    /**
+     * @param $mode
+     */
     public function requestGzipContent($mode)
     {
         if (is_bool($mode))
@@ -1195,12 +1119,25 @@ class HTTPRequest
     }
 
 
+    /**
+     * @param $document_sections
+     *
+     * @return mixed
+     */
     public function excludeLinkSearchDocumentSections($document_sections)
     {
         return $this->LinkFinder->excludeLinkSearchDocumentSections($document_sections);
     }
 
 
+    /**
+     * @param null $content_buffer_size
+     * @param null $chunk_buffer_size
+     * @param null $socket_read_buffer_size
+     * @param null $source_overlap_size
+     *
+     * @throws \Exception
+     */
     public function setBufferSizes($content_buffer_size = null, $chunk_buffer_size = null, $socket_read_buffer_size = null, $source_overlap_size = null)
     {
         if ($content_buffer_size !== null)
