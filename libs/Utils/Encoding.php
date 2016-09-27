@@ -19,14 +19,7 @@ class Encoding
 
     public static function isGzipEncoded($content)
     {
-        if(substr($content, 0, 3) == "\x1f\x8b\x08")
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return substr($content, 0, 3) === "\x1f\x8b\x08";
     }
 
     /**
@@ -42,10 +35,7 @@ class Encoding
     {
         $sample = @iconv('utf-8', 'utf-8', $string);
 
-        if (md5($sample) == md5($string))
-            return true;
-        else
-            return false;
+        return md5($sample) == md5($string);
     }
 
     /**

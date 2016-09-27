@@ -17,7 +17,7 @@ require __DIR__ . '/../vendor/autoload.php';
 $crawler = new \PhCrawler\Crawlers\MyCrawler();
 
 // URL to crawl
-$crawler->setURL("www.php.net");
+$crawler->setURL("www.baidu.com");
 
 // Only receive content of files with content-type "text/html"
 $crawler->addContentTypeReceiveRule("#text/html#");
