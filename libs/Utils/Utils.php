@@ -595,7 +595,7 @@ class Utils
             if ($request_user_agent_string !== null)
                 $Request->userAgentString = $request_user_agent_string;
 
-            $DocInfo = $Request->sendRequest();
+            $DocInfo = $Request->fetch();
 
             if ($DocInfo->received == true)
                 return $DocInfo->source;

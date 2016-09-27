@@ -603,7 +603,7 @@ class Crawler
 
         // Do request
         $this->delayRequest();
-        $PageInfo = $this->PageRequest->sendRequest();
+        $PageInfo = $this->PageRequest->fetch();
 
         // Remove post and cookie-data from request-object
         $this->PageRequest->clearCookies();

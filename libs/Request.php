@@ -374,7 +374,7 @@ class Request
      * @return \PhCrawler\DocumentInfo
      * @throws \Exception
      */
-    public function sendRequest()
+    public function fetch()
     {
         // Prepare LinkFinder
         $this->LinkFinder->resetLinkCache();
