@@ -46,56 +46,56 @@ class HttpRequest
      *
      * @var int The kimit n bytes
      */
-    protected $content_size_limit = 0;
+    public $content_size_limit = 0;
 
     /**
      * Global counter for traffic this instance of the HTTPRequest-class caused.
      *
      * @var int Traffic in bytes
      */
-    protected $global_traffic_count = 0;
+    public $global_traffic_count = 0;
 
     /**
      * Numer of bytes received from the header
      *
      * @var float Number of bytes
      */
-    protected $header_bytes_received = null;
+    public $header_bytes_received = null;
 
     /**
      * Number of bytes received from the content
      *
      * @var float Number of bytes
      */
-    protected $content_bytes_received = null;
+    public $content_bytes_received = null;
 
     /**
      * The time it took to tranfer the data of this document
      *
      * @var float Time in seconds and milliseconds
      */
-    protected $data_transfer_time = null;
+    public $data_transfer_time = null;
 
     /**
      * The time it took to connect to the server
      *
      * @var float Time in seconds and milliseconds or NULL if connection could not be established
      */
-    protected $server_connect_time = null;
+    public $server_connect_time = null;
 
     /**
      * The server resonse time
      *
      * @var float time in seconds and milliseconds or NULL if the server didn't respond
      */
-    protected $server_response_time = null;
+    public $server_response_time = null;
 
     /**
      * Contains all rules defining the content-types that should be received
      *
      * @var array Numeric array conatining the regex-rules
      */
-    protected $receive_content_types = array();
+    public $receive_content_types = array();
 
     /**
      * Contains all rules defining the content-types of pages/files that should be streamed directly to
@@ -103,21 +103,21 @@ class HttpRequest
      *
      * @var array Numeric array conatining the regex-rules
      */
-    protected $receive_to_file_content_types = array();
+    public $receive_to_file_content_types = array();
 
     /**
      * Contains all rules defining the content-types defining which documents shoud get checked for links.
      *
      * @var array Numeric array conatining the regex-rules
      */
-    protected $link_search_content_types = array("#text/html# i");
+    public $link_search_content_types = array("#text/html# i");
 
     /**
      * The TMP-File to use when a page/file should be streamed to file.
      *
      * @var string
      */
-    protected $tmpFile = "phCrawler.tmp";
+    public $tmpFile = "phCrawler.tmp";
 
     /**
      * The URL for the request as URLDescriptor-object
@@ -145,12 +145,12 @@ class HttpRequest
      *
      * @var LinkFinder
      */
-    protected $LinkFinder;
+    public $LinkFinder;
 
     /**
      * The last response-header this request-instance received.
      */
-    protected $lastResponseHeader;
+    public $lastResponseHeader;
 
     /**
      * Array containing cookies to send with the request
@@ -182,7 +182,7 @@ class HttpRequest
     /**
      * The bytes contained in the socket-buffer directly after the server responded
      */
-    protected $socket_pre_fill_size;
+    public $socket_pre_fill_size;
 
     /**
      * Enalbe/disable request for gzip encoded content.
@@ -192,24 +192,24 @@ class HttpRequest
     /**
      * @var null | \Closure
      */
-    protected $header_check_callback_function = null;
+    public $header_check_callback_function = null;
 
     /**
      * @var int
      */
-    protected $content_buffer_size = 200000;
+    public $content_buffer_size = 200000;
     /**
      * @var int
      */
-    protected $chunk_buffer_size = 20240;
+    public $chunk_buffer_size = 20240;
     /**
      * @var int
      */
-    protected $socket_read_buffer_size = 1024;
+    public $socket_read_buffer_size = 1024;
     /**
      * @var int
      */
-    protected $source_overlap_size = 1500;
+    public $source_overlap_size = 1500;
 
     /**
      * HttpRequest constructor.
@@ -399,7 +399,11 @@ class HttpRequest
         $DocInfo->header_send = $header_string;
 
         // Open socket
-        $this->openSocket($DocInfo->error_code, $DocInfo->error_string);
+//        $this->openSocket($DocInfo->error_code, $DocInfo->error_string);
+
+        $Socket = new HttpSocket($this);
+        $Socket->open($DocInfo->error_code, $DocInfo->error_string);
+
         $DocInfo->server_connect_time = $this->server_connect_time;
 
         // If error occured
@@ -416,10 +420,15 @@ class HttpRequest
         }
 
         // Send request
-        $this->sendRequestHeader($request_header_lines);
+//        $this->sendRequestHeader($request_header_lines);
+
+        $Socket->sendRequestHeader($request_header_lines);
 
         // Read response-header
-        $response_header = $this->readResponseHeader($DocInfo->error_code, $DocInfo->error_string);
+//        $response_header = $this->readResponseHeader($DocInfo->error_code, $DocInfo->error_string);
+
+        $response_header = $Socket->readResponseHeader($DocInfo->error_code, $DocInfo->error_string);
+
         $DocInfo->server_response_time = $this->server_response_time;
 
         // If error occured
@@ -451,7 +460,9 @@ class HttpRequest
 
         if ($receive == false)
         {
-            @fclose($this->socket);
+//            @fclose($this->socket);
+            $Socket->close();
+
             $DocInfo->received = false;
             $DocInfo->links_found_url_descriptors = $this->LinkFinder->getAllURLs(); // Maybe found a link/redirect in the header
             $DocInfo->meta_attributes = $this->LinkFinder->getAllMetaAttributes();
@@ -466,7 +477,9 @@ class HttpRequest
         $stream_to_file = $this->decideStreamToFile($response_header);
 
         // Read content
-        $response_content = $this->readResponseContent($stream_to_file, $DocInfo->error_code, $DocInfo->error_string, $DocInfo->received_completely);
+//        $response_content = $this->readResponseContent($stream_to_file, $DocInfo->error_code, $DocInfo->error_string, $DocInfo->received_completely);
+
+        $response_content = $Socket->readResponseContent($stream_to_file, $DocInfo->error_code, $DocInfo->error_string, $DocInfo->received_completely);
 
         // If error occured
         if ($DocInfo->error_code != null)
@@ -474,7 +487,9 @@ class HttpRequest
             $DocInfo->error_occured = true;
         }
 
-        @fclose($this->socket);
+//        @fclose($this->socket);
+
+        $Socket->close();
 
         // Complete ResponseObject
         $DocInfo->content = $response_content;
@@ -537,390 +552,6 @@ class HttpRequest
 
         return $dataValues;
     }
-
-    /**
-     * Opens the socket to the host.
-     *
-     * @param  int    &$error_code          Error-code by referenct if an error occured.
-     * @param  string &$error_string        Error-string by reference
-     *
-     * @return bool   TRUE if socket could be opened, otherwise FALSE.
-     */
-    protected function openSocket(&$error_code, &$error_string)
-    {
-        Benchmark::reset("connecting_server");
-        Benchmark::start("connecting_server");
-
-        // SSL or not?
-        if ($this->url_parts["protocol"] == "https://") $protocol_prefix = "ssl://";
-        else $protocol_prefix = "";
-
-        // If SSL-request, but openssl is not installed
-        if ($protocol_prefix == "ssl://" && !extension_loaded("openssl"))
-        {
-            $error_code = RequestErrors::ERROR_SSL_NOT_SUPPORTED;
-            $error_string = "Error connecting to ".$this->url_parts["protocol"].$this->url_parts["host"].": SSL/HTTPS-requests not supported, extension openssl not installed.";
-        }
-
-        // Get IP for hostname
-        $ip_address = $this->DNSCache->getIP($this->url_parts["host"]);
-
-        // Open socket
-        if ($this->proxy != null)
-        {
-            $this->socket = @stream_socket_client($this->proxy["proxy_host"].":".$this->proxy["proxy_port"], $error_code, $error_str,
-                $this->socketConnectTimeout, STREAM_CLIENT_CONNECT);
-        }
-        else
-        {
-            // If ssl -> perform Server name indication
-            if ($this->url_parts["protocol"] == "https://")
-            {
-                $context = stream_context_create(array('ssl' => array('SNI_server_name' => $this->url_parts["host"])));
-                $this->socket = @stream_socket_client($protocol_prefix.$ip_address.":".$this->url_parts["port"], $error_code, $error_str,
-                    $this->socketConnectTimeout, STREAM_CLIENT_CONNECT, $context);
-            }
-            else
-            {
-                $this->socket = @stream_socket_client($protocol_prefix.$ip_address.":".$this->url_parts["port"], $error_code, $error_str,
-                    $this->socketConnectTimeout, STREAM_CLIENT_CONNECT); // NO $context here, memory-leak-bug in php v. 5.3.x!!
-            }
-        }
-
-        $this->server_connect_time = Benchmark::stop("connecting_server");
-
-        // If socket not opened -> throw error
-        if ($this->socket == false)
-        {
-            $this->server_connect_time = null;
-
-            // If proxy not reachable
-            if ($this->proxy != null)
-            {
-                $error_code = RequestErrors::ERROR_PROXY_UNREACHABLE;
-                $error_string = "Error connecting to proxy ".$this->proxy["proxy_host"].": Host unreachable (".$error_str.").";
-                return false;
-            }
-            else
-            {
-                $error_code = RequestErrors::ERROR_HOST_UNREACHABLE;
-                $error_string = "Error connecting to ".$this->url_parts["protocol"].$this->url_parts["host"].": Host unreachable (".$error_str.").";
-                return false;
-            }
-        }
-        else
-        {
-            return true;
-        }
-    }
-
-
-    /**
-     * @param $request_header_lines
-     */
-    protected function sendRequestHeader($request_header_lines)
-    {
-        // Header senden
-        $cnt = count($request_header_lines);
-        for ($x=0; $x<$cnt; $x++)
-        {
-            fputs($this->socket, $request_header_lines[$x]);
-        }
-    }
-
-    /**
-     * Reads the response-header.
-     *
-     * @param  int    &$error_code           Error-code by reference if an error occured.
-     * @param  string &$error_string         Error-string by reference
-     *
-     * @return string The response-header or NULL if an error occured
-     */
-    protected function readResponseHeader(&$error_code, &$error_string)
-    {
-        Benchmark::reset("server_response_time");
-        Benchmark::start("server_response_time");
-
-        $status = socket_get_status($this->socket);
-        $source_read = "";
-        $header = "";
-        $server_responded = false;
-
-        while ($status["eof"] == false)
-        {
-            socket_set_timeout($this->socket, $this->socketReadTimeout);
-
-            // Read line from socket
-            $line_read = fgets($this->socket, 1024);
-
-            // Server responded
-            if ($server_responded == false)
-            {
-                $server_responded = true;
-                $this->server_response_time = Benchmark::stop("server_response_time");
-
-                // Determinate socket prefill size
-                $status = socket_get_status($this->socket);
-                $this->socket_pre_fill_size = $status["unread_bytes"];
-
-                // Start data-transfer-time bechmark
-                Benchmark::reset("data_transfer_time");
-                Benchmark::start("data_transfer_time");
-            }
-
-            $source_read .= $line_read;
-
-            $this->global_traffic_count += strlen($line_read);
-
-            $status = socket_get_status($this->socket);
-
-            // Socket timed out
-            if ($status["timed_out"] == true)
-            {
-                $error_code = RequestErrors::ERROR_SOCKET_TIMEOUT;
-                $error_string = "Socket-stream timed out (timeout set to ".$this->socketReadTimeout." sec).";
-                return $header;
-            }
-
-            // No "HTTP" at beginnig of response
-            if (strtolower(substr($source_read, 0, 4)) != "http")
-            {
-                $error_code = RequestErrors::ERROR_NO_HTTP_HEADER;
-                $error_string = "HTTP-protocol error.";
-                return $header;
-            }
-
-            // Header found and read (2 newlines) -> stop
-            if (substr($source_read, -4, 4) == "\r\n\r\n" || substr($source_read, -2, 2) == "\n\n")
-            {
-                $header = substr($source_read, 0, strlen($source_read)-2);
-                break;
-            }
-        }
-
-        // Stop data-transfer-time bechmark
-        Benchmark::stop("data_transfer_time");
-
-        // Header was found
-        if ($header != "")
-        {
-            // Search for links (redirects) in the header
-            $this->LinkFinder->processHTTPHeader($header);
-            $this->header_bytes_received = strlen($header);
-            return $header;
-        }
-
-        // No header found
-        if ($header == "")
-        {
-            $this->server_response_time = null;
-            $error_code = RequestErrors::ERROR_NO_HTTP_HEADER;
-            $error_string = "Host doesn't respond with a HTTP-header.";
-            return null;
-        }
-        
-        return null;
-    }
-
-    /**
-     * Reads the response-content.
-     *
-     * @param bool    $stream_to_file If TRUE, the content will be streamed diretly to the temporary file and
-     *                                this method will not return the content as a string.
-     * @param int     &$error_code    Error-code by reference if an error occured.
-     * @param &string &$error_string  Error-string by reference
-     * @param &string &$document_received_completely Flag indicatign whether the content was received completely passed by reference
-     *
-     * @return string  The response-content/source. May be emtpy if an error ocdured or data was streamed to the tmp-file.
-     */
-    protected function readResponseContent($stream_to_file = false, &$error_code, &$error_string, &$document_received_completely)
-    {
-        $fp = null;
-        
-        $this->content_bytes_received = 0;
-
-        // If content should be streamed to file
-        if ($stream_to_file == true)
-        {
-            $fp = @fopen($this->tmpFile, "w");
-
-            if ($fp == false)
-            {
-                $error_code = RequestErrors::ERROR_TMP_FILE_NOT_WRITEABLE;
-                $error_string = "Couldn't open the temporary file ".$this->tmpFile." for writing.";
-                return "";
-            }
-        }
-
-        // Init
-        $source_portion = "";
-        $source_complete = "";
-        $document_received_completely = true;
-        $document_completed = false;
-        $gzip_encoded_content = null;
-
-        // Resume data-transfer-time benchmark
-        Benchmark::start("data_transfer_time");
-
-        while ($document_completed == false)
-        {
-            // Get chunk from content
-            $content_chunk = $this->readResponseContentChunk($document_completed, $error_code, $error_string, $document_received_completely);
-            $source_portion .= $content_chunk;
-
-            // Check if content is gzip-encoded (check only first chunk)
-            if ($gzip_encoded_content === null)
-            {
-                if (Encoding::isGzipEncoded($content_chunk))
-                    $gzip_encoded_content = true;
-                else
-                    $gzip_encoded_content = false;
-            }
-
-            // Stream to file or store source in memory
-            if ($stream_to_file == true)
-            {
-                @fwrite($fp, $content_chunk);
-            }
-            else
-            {
-                $source_complete .= $content_chunk;
-            }
-
-            // Decode gzip-encoded content when done with document
-            if ($document_completed == true && $gzip_encoded_content == true)
-                $source_complete = $source_portion = Encoding::decodeGZipContent($source_complete);
-
-            // Find links in portion of the source
-            if (($gzip_encoded_content == false && $stream_to_file == false && strlen($source_portion) >= $this->content_buffer_size) || $document_completed == true)
-            {
-                if (Utils::checkStringAgainstRegexArray($this->lastResponseHeader->content_type, $this->link_search_content_types))
-                {
-                    Benchmark::stop("data_transfer_time");
-                    $this->LinkFinder->findLinksInHTMLChunk($source_portion);
-
-                    if ($this->source_overlap_size > 0)
-                        $source_portion = substr($source_portion, -$this->source_overlap_size);
-                    else
-                        $source_portion = "";
-
-                    Benchmark::start("data_transfer_time");
-                }
-            }
-        }
-
-        if ($stream_to_file == true) @fclose($fp);
-
-        // Stop data-transfer-time benchmark
-        Benchmark::stop("data_transfer_time");
-        $this->data_transfer_time = Benchmark::getElapsedTime("data_transfer_time");
-
-        return $source_complete;
-    }
-
-
-    /**
-     * @param $document_completed
-     * @param $error_code
-     * @param $error_string
-     * @param $document_received_completely
-     *
-     * @return string
-     */
-    protected function readResponseContentChunk(&$document_completed, &$error_code, &$error_string, &$document_received_completely)
-    {
-        $source_chunk = "";
-        $stop_receiving = false;
-        $bytes_received = 0;
-        $document_completed = false;
-
-        // If chunked encoding and protocol to use is HTTP 1.1
-        if ($this->http_protocol_version == HttpProtocols::HTTP_1_1 && $this->lastResponseHeader->transfer_encoding == "chunked")
-        {
-            // Read size of next chunk
-            $chunk_line = @fgets($this->socket, 128);
-            if (trim($chunk_line) == "") $chunk_line = @fgets($this->socket, 128);
-            $current_chunk_size = hexdec(trim($chunk_line));
-        }
-        else
-        {
-            $current_chunk_size = $this->chunk_buffer_size;
-        }
-
-        if ($current_chunk_size === 0)
-        {
-            $stop_receiving = true;
-            $document_completed = true;
-        }
-
-        while ($stop_receiving == false)
-        {
-            socket_set_timeout($this->socket, $this->socketReadTimeout);
-
-            // Set byte-buffer to bytes in socket-buffer (Fix for SSL-hang-bug #56, thanks to MadEgg!)
-            $status = socket_get_status($this->socket);
-            if ($status["unread_bytes"] > 0)
-                $read_byte_buffer = $status["unread_bytes"];
-            else
-                $read_byte_buffer = $this->socket_read_buffer_size;
-
-            // If chunk will be complete next read -> resize read-buffer to size of remaining chunk
-            if ($bytes_received + $read_byte_buffer >= $current_chunk_size && $current_chunk_size > 0)
-            {
-                $read_byte_buffer = $current_chunk_size - $bytes_received;
-                $stop_receiving = true;
-            }
-
-            // Read line from socket
-            $line_read = @fread($this->socket, $read_byte_buffer);
-
-            $source_chunk .= $line_read;
-            $line_length = strlen($line_read);
-            $this->content_bytes_received += $line_length;
-            $this->global_traffic_count += $line_length;
-            $bytes_received += $line_length;
-
-            // Check socket-status
-            $status = socket_get_status($this->socket);
-
-            // Check for EOF
-            if ($status["unread_bytes"] == 0 && ($status["eof"] == true || feof($this->socket) == true))
-            {
-                $stop_receiving = true;
-                $document_completed = true;
-            }
-
-            // Socket timed out
-            if ($status["timed_out"] == true)
-            {
-                $stop_receiving = true;
-                $document_completed = true;
-                $error_code = RequestErrors::ERROR_SOCKET_TIMEOUT;
-                $error_string = "Socket-stream timed out (timeout set to ".$this->socketReadTimeout." sec).";
-                $document_received_completely = false;
-                return $source_chunk;
-            }
-
-            // Check if content-length stated in the header is reached
-            if ($this->lastResponseHeader->content_length == $this->content_bytes_received)
-            {
-                $stop_receiving = true;
-                $document_completed = true;
-            }
-
-            // Check if contentsize-limit is reached
-            if ($this->content_size_limit > 0 && $this->content_size_limit <= $this->content_bytes_received)
-            {
-                $document_received_completely = false;
-                $stop_receiving = true;
-                $document_completed = true;
-            }
-
-        }
-
-        return $source_chunk;
-    }
-
 
     /**
      * @return RequestHeader
