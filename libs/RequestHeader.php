@@ -21,7 +21,7 @@ use PhCrawler\Utils\Utils;
 class RequestHeader
 {
     /**
-     * @var \PhCrawler\HttpRequest
+     * @var \PhCrawler\Request
      */
     protected $_Request;
 
@@ -67,9 +67,9 @@ class RequestHeader
     /**
      * RequestHeader constructor.
      *
-     * @param \PhCrawler\HttpRequest $Request
+     * @param \PhCrawler\Request $Request
      */
-    public function __construct(HttpRequest $Request)
+    public function __construct(Request $Request)
     {
         $this->_Request = $Request;
 
@@ -78,9 +78,9 @@ class RequestHeader
     }
 
     /**
-     * @param \PhCrawler\HttpRequest $Request
+     * @param \PhCrawler\Request $Request
      */
-    public function init(HttpRequest $Request)
+    public function init(Request $Request)
     {
 
         if (count($Request->post_data) > 0) $this->method = RequestHeader::METHOD_POST;

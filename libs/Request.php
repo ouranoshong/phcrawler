@@ -9,17 +9,15 @@
 namespace PhCrawler;
 
 use Exception;
-use PhCrawler\Enums\HttpProtocols;
 use PhCrawler\Enums\RequestErrors;
-use PhCrawler\Utils\Encoding;
 use PhCrawler\Utils\Utils;
 
 /**
- * Class HttpRequest
+ * Class Request
  *
  * @package PhCrawler
  */
-class HttpRequest
+class Request
 {
     /**
      * The user-agent-string
@@ -49,7 +47,7 @@ class HttpRequest
     public $content_size_limit = 0;
 
     /**
-     * Global counter for traffic this instance of the HTTPRequest-class caused.
+     * Global counter for traffic this instance of the Request-class caused.
      *
      * @var int Traffic in bytes
      */
@@ -212,7 +210,7 @@ class HttpRequest
     public $source_overlap_size = 1500;
 
     /**
-     * HttpRequest constructor.
+     * Request constructor.
      */
     public function __construct()
     {
@@ -399,9 +397,7 @@ class HttpRequest
         $DocInfo->header_send = $header_string;
 
         // Open socket
-//        $this->openSocket($DocInfo->error_code, $DocInfo->error_string);
-
-        $Socket = new HttpSocket($this);
+        $Socket = new Socket($this);
         $Socket->open($DocInfo->error_code, $DocInfo->error_string);
 
         $DocInfo->server_connect_time = $this->server_connect_time;
@@ -419,13 +415,7 @@ class HttpRequest
             return $DocInfo;
         }
 
-        // Send request
-//        $this->sendRequestHeader($request_header_lines);
-
         $Socket->sendRequestHeader($request_header_lines);
-
-        // Read response-header
-//        $response_header = $this->readResponseHeader($DocInfo->error_code, $DocInfo->error_string);
 
         $response_header = $Socket->readResponseHeader($DocInfo->error_code, $DocInfo->error_string);
 
@@ -698,7 +688,7 @@ class HttpRequest
     }
 
     /**
-     * Returns the global traffic this instance of the HTTPRequest-class caused so far.
+     * Returns the global traffic this instance of the Request-class caused so far.
      *
      * @return int The traffic in bytes.
      */

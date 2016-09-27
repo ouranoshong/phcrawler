@@ -14,28 +14,28 @@ use PhCrawler\Utils\Utils;
 
 
 /**
- * Class HttpSocket
+ * Class Socket
  *
  * @package PhCrawler
  */
-class HttpSocket
+class Socket
 {
     /**
-     * @var
+     * @var resource
      */
     protected $_socket;
 
     /**
-     * @var \PhCrawler\HttpRequest
+     * @var \PhCrawler\Request
      */
     protected $_Request;
 
     /**
-     * HttpSocket constructor.
+     * Socket constructor.
      *
-     * @param \PhCrawler\HttpRequest $Request
+     * @param \PhCrawler\Request $Request
      */
-    public function __construct(HttpRequest $Request)
+    public function __construct(Request $Request)
     {
        $this->_Request = $Request; 
     }

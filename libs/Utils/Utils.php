@@ -10,7 +10,7 @@ namespace PhCrawler\Utils;
 
 use Exception;
 use PhCrawler\CookieDescriptor;
-use PhCrawler\HttpRequest;
+use PhCrawler\Request;
 use PhCrawler\UrlPartsDescriptor;
 
 class Utils
@@ -589,7 +589,7 @@ class Utils
         elseif ($UriParts->protocol == "http://" || $UriParts->protocol == "https://")
         {
             $uri = self::normalizeURL($uri);
-            $Request = new HTTPRequest();
+            $Request = new Request();
             $Request->setUrl(new PHPCrawlerURLDescriptor($uri));
 
             if ($request_user_agent_string !== null)
