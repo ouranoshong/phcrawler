@@ -12,4 +12,23 @@ namespace PhCrawler\Http;
 class Request
 {
 
+    public $url;
+
+
+
+    public function fetch() {
+
+    }
+
+    public function get() {
+
+    }
+
+    public function post() {
+
+    }
+
+
+
+
 }
