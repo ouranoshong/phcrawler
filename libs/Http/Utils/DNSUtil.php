@@ -9,7 +9,7 @@
 namespace PhCrawler\Http\Utils;
 
 
-class DNS
+class DNSUtil
 {
     public static $HOST_IP_TABLE = [];
 

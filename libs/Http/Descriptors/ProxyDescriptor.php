@@ -14,7 +14,7 @@ namespace PhCrawler\Http\Descriptors;
  *
  * @package PhCrawler\Http\Descriptors
  */
-class Proxy
+class ProxyDescriptor
 {
     /**
      * @var string

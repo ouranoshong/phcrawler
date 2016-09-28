@@ -8,9 +8,9 @@
 
 namespace PhCrawler\Http\Descriptors;
 
-use PhCrawler\Http\Utils\Url as UtilsUrl;
+use PhCrawler\Http\Utils\UrlUtil;
 
-class UrlParts
+class UrlPartsDescriptor
 {
 
     const PROTOCOL_PREFIX_HTTP = 'http://';
@@ -18,22 +18,22 @@ class UrlParts
     const PROTOCOL_PREFIX_HTTPS = 'https://';
 
     /**
-     * @var
+     * @var string
      */
     public $protocol;
 
     /**
-     * @var
+     * @var string
      */
     public $host;
 
     /**
-     * @var
+     * @var string
      */
     public $path;
 
     /**
-     * @var
+     * @var string
      */
     public $file;
 
@@ -43,17 +43,19 @@ class UrlParts
     public $domain;
 
     /**
-     * @var
+     * @var string
      */
     public $port;
 
+    public $query;
+
     /**
-     * @var
+     * @var string
      */
     public $auth_username;
 
     /**
-     * @var
+     * @var string
      */
     public $auth_password;
 
@@ -70,11 +72,12 @@ class UrlParts
      * @return $this
      */
     public function init($url = '') {
-        $parts = UtilsUrl::parse($url);
+        $parts = UrlUtil::parse($url);
         $this->protocol = $parts["protocol"];
         $this->host = $parts["host"];
         $this->path = $parts["path"];
         $this->file = $parts["file"];
+        $this->query = $parts['query'];
         $this->domain = $parts["domain"];
         $this->port = $parts["port"];
         $this->auth_username = $parts["auth_username"];
