@@ -12,11 +12,13 @@ require 'vendor/autoload.php';
 use PhCrawler\Http\Request;
 
 $Request = new Request();
-
+// https://googleads.g.doubleclick.net/pagead/html/r20160922/r20160727/zrt_lookup.html
 $Request->UrlDescriptor = new \PhCrawler\Http\Descriptors\UrlDescriptor(
-    'https://www.sov5.com/search?q=PHP+Deprecated%3A++SNI_server_name+is+deprecated+in+favor+of+peer_name&re=1'
+    'https://googleads.g.doubleclick.net/pagead/html/r20160922/r20160727/zrt_lookup.html'
 );
 $Request->UrlPartsDescriptor = new \PhCrawler\Http\Descriptors\UrlPartsDescriptor($Request->UrlDescriptor->url_rebuild);
 
-$Request->http_protocol_version =  Request::HTTP_VERSION_1_1;
+$Request->http_protocol_version =  \PhCrawler\Http\Enums\Protocols::HTTP_1_1;
 $Request->fetch();
+
+var_dump($Request);

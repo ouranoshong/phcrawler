@@ -23,5 +23,5 @@ interface Protocols
      *
      * @var string
      */
-    const HTTP_1_1 = '2.0';
+    const HTTP_1_1 = '1.1';
 }

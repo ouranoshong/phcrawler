@@ -9,6 +9,7 @@
 namespace PhCrawler\Http;
 
 
+use PhCrawler\Http\Descriptors\CookieDescriptor;
 use PhCrawler\Http\Utils\UrlUtil;
 
 class ResponseHeader

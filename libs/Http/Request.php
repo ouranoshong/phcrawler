@@ -125,10 +125,51 @@ class Request
      */
     public $Socket;
 
+    /**
+     * @var
+     */
     protected $document_completed;
 
+    /**
+     * @var
+     */
     protected $document_received_completely;
 
+
+
+    /**
+     * @var null | \Closure
+     */
+    public $header_check_callback_function = null;
+
+    /**
+     * @var int
+     */
+    protected $content_buffer_size = 200000;
+    /**
+     * @var int
+     */
+    protected $chunk_buffer_size = 20240;
+    /**
+     * @var int
+     */
+    protected $socket_read_buffer_size = 1024;
+    /**
+     * @var int
+     */
+    protected $source_overlap_size = 1500;
+
+    /**
+     * @var int
+     */
+    protected $content_size_limit = 0;
+
+    /**
+     * @var float | null
+     */
+    protected $content_bytes_received = null;
+
+    protected $global_traffic_count = 0;
     /**
      *
      */
@@ -142,28 +183,15 @@ class Request
 
         $requestHeaderRaw = $this->buildRequestHeaderRaw();
 
-        var_dump($requestHeaderRaw);
-
         $Socket->send($requestHeaderRaw);
 
         $responseHeaderRaw = $this->readResponseHeader();
 
-        $this->ResponseHeader = new ResponseHeader($requestHeaderRaw, $this->UrlDescriptor->url_rebuild);
+        $this->ResponseHeader = new ResponseHeader($responseHeaderRaw, $this->UrlDescriptor->url_rebuild);
 
         $responseBodyRaw = $this->readResponseBody();
 
-
-        var_dump(
-            $responseHeaderRaw
-        );
-
-        var_dump($responseBodyRaw);
-
-        var_dump($Socket);
-
         $Socket->close();
-
-        var_dump($Socket);
     }
 
     /**

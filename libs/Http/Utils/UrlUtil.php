@@ -341,8 +341,9 @@ class UrlUtil
      */
     public static function getHeaderValue($header, $directive)
     {
-        preg_match("#[\r\n]".$directive.":(.*)[\r\n\;]# Ui", $header, $match);
+        preg_match("#[\r\n]".$directive.":(.*)[\r\n;]# Ui", $header, $match);
 
+//        var_dump(
         if (isset($match[1]) && trim($match[1]) != "")
         {
             return trim($match[1]);

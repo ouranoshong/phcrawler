@@ -167,11 +167,11 @@ class Socket
         return fwrite($this->_socket, $message, strlen($message));
     }
 
-    public function read($buffer = 128) {
+    public function read($buffer = 1024) {
         return @fread($this->_socket, $buffer);
     }
 
-    public function gets($buffer = 1024) {
+    public function gets($buffer = 128) {
         return @fgets($this->_socket, $buffer);
     }
 
@@ -201,7 +201,7 @@ class Socket
     }
 
     public function isEOF() {
-
+        return ($this->getStatus()["eof"] == true || feof($this->_socket) == true);
     }
 
 }

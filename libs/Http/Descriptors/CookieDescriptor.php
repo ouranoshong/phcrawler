@@ -106,7 +106,7 @@ class CookieDescriptor
         $this->source_url = $source_url;
 
         // Send-time
-        $this->cookie_send_time = Benchmark::getmicrotime();
+        $this->cookie_send_time = microtime(true);
 
         // Expire-date to timetsamp
         if ($this->expires != null)
