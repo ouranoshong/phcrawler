@@ -153,7 +153,7 @@ class Socket
 
     protected function getClientContext() {
         if ($this->isSSLConnection()) {
-            return stream_context_create(array('ssl' => array('SNI_server_name' => $this->UrlParsDescriptor->host)));
+            return stream_context_create(array('ssl' => array('peer_name' => $this->UrlParsDescriptor->host)));
         }
         return null;
     }
@@ -187,6 +187,21 @@ class Socket
     public function getStatus()
     {
         return socket_get_status($this->_socket);
+    }
+
+    public function checkTimeoutStatus() {
+        $status = $this->getStatus();
+        if ($status["timed_out"] == true)
+        {
+            $this->error_code = RequestErrors::ERROR_SOCKET_TIMEOUT;
+            $this->error_message = "Socket-stream timed out (timeout set to ".$this->timeout." sec).";
+            return true;
+        }
+        return false;
+    }
+
+    public function isEOF() {
+
     }
 
 }

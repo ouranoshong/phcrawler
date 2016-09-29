@@ -20,7 +20,9 @@ use PhCrawler\Http\Descriptors\UrlPartsDescriptor;
  */
 class Request
 {
-    use handleRequestHeader;
+    use handleRequestHeader,
+        handleResponseHeader,
+        handleResponseBody;
 
     /**
      *
@@ -46,8 +48,14 @@ class Request
     const HTTP_VERSION_1_1 = '1.1';
 
 
+    /**
+     * @var string
+     */
     public $userAgent = 'PhCrawler';
 
+    /**
+     * @var bool
+     */
     public $request_gzip_content = true;
     /**
      * @var string
@@ -89,13 +97,71 @@ class Request
     public $post_data = [];
 
     /**
+     * @var int
+     */
+    public $header_bytes_received = 0;
+
+    /**
+     * @var null
+     */
+    public $server_response_time = null;
+
+    /**
+     * @var
+     */
+    public $error_code;
+    /**
+     * @var
+     */
+    public $error_message;
+
+    /**
+     * @var ResponseHeader
+     */
+    public $ResponseHeader;
+
+    /**
+     * @var Socket
+     */
+    public $Socket;
+
+    protected $document_completed;
+
+    protected $document_received_completely;
+
+    /**
      *
      */
     public function fetch() {
-        $Socket = new Socket();
+
+        $this->Socket = $Socket = new Socket();
+
         $Socket->UrlParsDescriptor = $this->UrlPartsDescriptor;
+
         $Socket->open();
-        $Socket->send($this->buildRequestHeaderRaw());
+
+        $requestHeaderRaw = $this->buildRequestHeaderRaw();
+
+        var_dump($requestHeaderRaw);
+
+        $Socket->send($requestHeaderRaw);
+
+        $responseHeaderRaw = $this->readResponseHeader();
+
+        $this->ResponseHeader = new ResponseHeader($requestHeaderRaw, $this->UrlDescriptor->url_rebuild);
+
+        $responseBodyRaw = $this->readResponseBody();
+
+
+        var_dump(
+            $responseHeaderRaw
+        );
+
+        var_dump($responseBodyRaw);
+
+        var_dump($Socket);
+
+        $Socket->close();
 
         var_dump($Socket);
     }

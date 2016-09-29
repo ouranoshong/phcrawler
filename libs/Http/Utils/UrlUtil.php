@@ -13,7 +13,7 @@ use PhCrawler\Http\Descriptors\UrlPartsDescriptor;
 
 class UrlUtil
 {
-    public function parse($url) {
+    public static function parse($url) {
         // Protokoll der URL hinzuf�gen (da ansonsten parse_url nicht klarkommt)
         if (!preg_match("#^[a-z0-9-]+://# i", $url))
             $url = "http://" . $url;
@@ -170,23 +170,6 @@ class UrlUtil
         else return true;
     }
 
-    /**
-     * Gets the HTTP-statuscode from a given response-header.
-     *
-     * @param string $header  The response-header
-     * @return int            The status-code or NULL if no status-code was found.
-     */
-    public static function getHTTPStatusCode($header)
-    {
-        $first_line = strtok($header, "\n");
-
-        preg_match("# [0-9]{3}#", $first_line, $match);
-
-        if (isset($match[0]))
-            return (int)trim($match[0]);
-        else
-            return null;
-    }
 
     /**
      * Reconstructs a full qualified and normalized URL from a given link relating to the URL the link was found in.
@@ -368,29 +351,6 @@ class UrlUtil
         else return null;
     }
 
-    /**
-     * Returns all cookies from the give response-header.
-     *
-     * @param string $header      The response-header
-     * @param string $source_url  URL the cookie was send from.
-     * @return array Numeric array containing all cookies as CookieDescriptor-objects.
-     */
-    public static function getCookiesFromHeader($header, $source_url)
-    {
-        $cookies = array();
-
-        $hits = preg_match_all("#[\r\n]set-cookie:(.*)[\r\n]# Ui", $header, $matches);
-
-        if ($hits && $hits != 0)
-        {
-            for ($x=0; $x<count($matches[1]); $x++)
-            {
-                $cookies[] = CookieDescriptor::getFromHeaderLine($matches[1][$x], $source_url);
-            }
-        }
-
-        return $cookies;
-    }
 
     /**
      * Returns the normalized root-URL of the given URL

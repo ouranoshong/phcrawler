@@ -14,7 +14,7 @@ use PhCrawler\Http\Request;
 $Request = new Request();
 
 $Request->UrlDescriptor = new \PhCrawler\Http\Descriptors\UrlDescriptor(
-    'https://www.baidu.com'
+    'https://www.sov5.com/search?q=PHP+Deprecated%3A++SNI_server_name+is+deprecated+in+favor+of+peer_name&re=1'
 );
 $Request->UrlPartsDescriptor = new \PhCrawler\Http\Descriptors\UrlPartsDescriptor($Request->UrlDescriptor->url_rebuild);
 
