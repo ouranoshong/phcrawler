@@ -12,11 +12,13 @@ namespace PhCrawler\Http;
 use PhCrawler\Benchmark;
 use PhCrawler\Http\Enums\RequestErrors;
 use PhCrawler\Http\Enums\Timer;
+use PhCrawler\Http\Utils\UrlUtil;
 
 trait handleResponseHeader
 {
 
     public function readResponseHeader() {
+        /**@var \PhCrawler\Http\Socket $Socket */
         $Socket = $this->Socket;
 
         Benchmark::reset(Timer::SERVER_RESPONSE);
@@ -33,7 +35,8 @@ trait handleResponseHeader
 
             if ($server_response == false) {
 
-                $this->server_response_time = Benchmark::stop(Timer::SERVER_RESPONSE);
+                $this->setServerResponseTime(Benchmark::stop(Timer::SERVER_RESPONSE));
+                $this->socket_pre_fill_size = $Socket->getUnreadBytes();
                 $server_response = true;
 
                 Benchmark::reset(Timer::DATA_TRANSFER);
@@ -45,15 +48,15 @@ trait handleResponseHeader
             $this->global_traffic_count += strlen($line_read);
 
             if ($Socket->checkTimeoutStatus()) {
-                $this->error_code = $Socket->error_code;
-                $this->error_message = $Socket->error_message;
+                $this->setErrorCode($Socket->error_code);
+                $this->setErrorMessage($Socket->error_message);
                 return $header;
             }
 
             if (!$this->isHttpResponse($source_read))
             {
-                $this->error_code = RequestErrors::ERROR_NO_HTTP_HEADER;
-                $this->error_message = "HTTP-protocol error.";
+                $this->setErrorCode(RequestErrors::ERROR_NO_HTTP_HEADER);
+                $this->setErrorMessage("HTTP-protocol error.");
                 return $header;
             }
 
@@ -77,9 +80,9 @@ trait handleResponseHeader
         // No header found
         if ($header == "")
         {
-            $this->server_response_time = null;
-            $this->error_code = RequestErrors::ERROR_NO_HTTP_HEADER;
-            $this->error_message = "Host doesn't respond with a HTTP-header.";
+            $this->setServerResponseTime();
+            $this->setErrorCode(RequestErrors::ERROR_NO_HTTP_HEADER);
+            $this->setErrorMessage("Host doesn't respond with a HTTP-header.");
             return null;
         }
 
@@ -95,6 +98,32 @@ trait handleResponseHeader
 
     protected function generateRealHeader($source) {
         return substr($source, 0, strlen($source)-2);
+    }
+
+    protected function decideReceiveContent(ResponseHeader $responseHeader)
+    {
+        // Get Content-Type from header
+        $content_type = $responseHeader->content_type;
+
+        // Call user header-check-callback-method
+        if ($this->response_header_check_callback_function != null)
+        {
+            $ret = call_user_func($this->response_header_check_callback_function, $responseHeader);
+            if ($ret < 0) return false;
+        }
+
+        // No Content-Type given
+        if ($content_type == null)
+            return false;
+
+        // Status-code not 2xx
+        if ($responseHeader->http_status_code == null || $responseHeader->http_status_code > 299 || $responseHeader->http_status_code < 200)
+            return false;
+
+        // Check against the given content-type-rules
+        $receive = UrlUtil::checkStringAgainstRegexArray($content_type, $this->receive_content_types);
+
+        return $receive;
     }
 
 }

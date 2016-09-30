@@ -14,4 +14,6 @@ interface Timer
     const DATA_TRANSFER = 'data_transfer_time';
 
     const SERVER_RESPONSE = 'server_response_time';
+
+    const SERVER_CONNECT = 'server_connecting_time';
 }

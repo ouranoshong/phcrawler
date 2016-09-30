@@ -21,7 +21,7 @@ use PhCrawler\Http\Utils\UrlUtil;
 trait handleRequestHeader
 {
 
-    public function initRequestHeader() {
+    protected function initRequestHeader() {
         if (count($this->post_data) > 0) $this->method = Request::METHOD_POST;
         else $this->method = Request::METHOD_GET;
     }

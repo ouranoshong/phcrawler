@@ -81,15 +81,8 @@ class DocumentInfo
      * @var string
      * @section 2 Content-related information
      */
-    public $header = "";
+    public $header_received = "";
 
-    /**
-     * The complete HTTP-header the webserver responded with this page or file as a PHPCrawlerResponseHeader-object.
-     *
-     * @var ResponseHeader
-     * @section 2 Content-related information
-     */
-    public $responseHeader;
 
     /**
      * The complete HTTP-request-header the crawler sent to the server (debugging info).
@@ -116,14 +109,6 @@ class DocumentInfo
      * @section 2 Content-related information
      */
     public $received_completely = false;
-
-    /**
-     * Alias for received_completely, was spelled wrong in prevoius versions of phpcrawl.
-     *
-     * @deprecated
-     * @section 11 Deprecated
-     */
-    public $received_completly = false;
 
     /**
      * Will be true if the content was received into local memory.
@@ -169,15 +154,6 @@ class DocumentInfo
      */
     public $content_type = "";
 
-    /**
-     * The content of the requested document (html-sourcecode or content of file).
-     *
-     * Will be empty if "received" is FALSE and the source won't be complete if "received_completly" is FALSE!
-     *
-     * @var string
-     * @section 2 Content-related information
-     */
-    public $content = "";
 
     /**
      * Same as "content", the content of the requested document.
@@ -185,7 +161,7 @@ class DocumentInfo
      * @var string
      * @section 2 Content-related information
      */
-    public $source = "";
+    public $content = "";
 
     /**
      * The temporary file to which the content was received.
@@ -260,7 +236,7 @@ class DocumentInfo
      * @var string
      * @section 7 Referer information
      */
-    public $refering_linkcode = null;
+    public $refering_link_code = null;
 
     /**
      * Contains the raw link as it was found in the content of the refering URL. (E.g. "../foo.html")
@@ -279,7 +255,7 @@ class DocumentInfo
      * @var string
      * @section 7 Referer information
      */
-    public $refering_linktext = null;
+    public $refering_link_text = null;
 
     /**
      * Indicates whether an error occured while requesting/receiving the document.
@@ -304,7 +280,7 @@ class DocumentInfo
      * @var string A human readable error-string.
      * @section 8 Error-handling
      */
-    public $error_string = null;
+    public $error_message = null;
 
     /**
      * Indicated whether the traffic-limit set by the user was reached after downloading this document.

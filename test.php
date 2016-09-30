@@ -24,9 +24,9 @@ $Request->UrlDescriptor = new \PhCrawler\Http\Descriptors\UrlDescriptor(
 $Request->UrlPartsDescriptor = new \PhCrawler\Http\Descriptors\UrlPartsDescriptor($Request->UrlDescriptor->url_rebuild);
 
 $Request->http_protocol_version =  \PhCrawler\Http\Enums\Protocols::HTTP_1_1;
-$Request->fetch();
+$DocumentInfo = $Request->fetch();
 
 
-var_dump($Request);
+var_dump($DocumentInfo);
 
 //var_dump($Request);

@@ -47,6 +47,7 @@ class UrlPartsDescriptor
      */
     public $port;
 
+
     public $query;
 
     /**
@@ -58,6 +59,7 @@ class UrlPartsDescriptor
      * @var string
      */
     public $auth_password;
+
 
     public function __construct($url = '')
     {

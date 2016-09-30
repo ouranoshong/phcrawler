@@ -46,7 +46,7 @@ trait handleResponseBody
 
         Benchmark::stop(Timer::DATA_TRANSFER);
 
-        $this->data_transfer_time = Benchmark::getElapsedTime(Timer::DATA_TRANSFER);
+        $this->setDataTransferTime(Benchmark::getElapsedTime(Timer::DATA_TRANSFER));
 
         return $source_complete;
     }
