@@ -20,7 +20,8 @@ use PhCrawler\Http\Descriptors\UrlPartsDescriptor;
  */
 class Request
 {
-    use handleRequestHeader,
+    use handleDocumentInfo,
+        handleRequestHeader,
         handleResponseHeader,
         handleResponseBody;
 
@@ -121,6 +122,11 @@ class Request
     public $ResponseHeader;
 
     /**
+     * @var
+     */
+    public $DocumentInfo;
+
+    /**
      * @var Socket
      */
     public $Socket;
@@ -134,8 +140,6 @@ class Request
      * @var
      */
     protected $document_received_completely;
-
-
 
     /**
      * @var null | \Closure
@@ -197,12 +201,18 @@ class Request
     }
 
 
+    /**
+     * @return bool
+     */
     protected function openSocket() {
         $this->Socket = $Socket = new Socket();
         $Socket->UrlParsDescriptor = $this->UrlPartsDescriptor;
         return $Socket->open();
     }
 
+    /**
+     *
+     */
     protected function sendRequestHeader() {
         $requestHeaderRaw = $this->buildRequestHeaderRaw();
         $this->Socket->send($requestHeaderRaw);
