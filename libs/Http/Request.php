@@ -143,6 +143,11 @@ class Request
     public $header_check_callback_function = null;
 
     /**
+     * @var null
+     */
+    public $data_transfer_time = null;
+
+    /**
      * @var int
      */
     protected $content_buffer_size = 200000;
@@ -169,29 +174,38 @@ class Request
      */
     protected $content_bytes_received = null;
 
+    /**
+     * @var int
+     */
     protected $global_traffic_count = 0;
     /**
      *
      */
     public function fetch() {
 
+            if (!$this->openSocket()) return false;
+
+            $this->sendRequestHeader();
+
+            $responseHeaderRaw = $this->readResponseHeader();
+
+            $this->ResponseHeader = new ResponseHeader($responseHeaderRaw, $this->UrlDescriptor->url_rebuild);
+
+            $responseBodyRaw = $this->readResponseBody();
+
+            $this->Socket->close();
+    }
+
+
+    protected function openSocket() {
         $this->Socket = $Socket = new Socket();
-
         $Socket->UrlParsDescriptor = $this->UrlPartsDescriptor;
+        return $Socket->open();
+    }
 
-        $Socket->open();
-
+    protected function sendRequestHeader() {
         $requestHeaderRaw = $this->buildRequestHeaderRaw();
-
-        $Socket->send($requestHeaderRaw);
-
-        $responseHeaderRaw = $this->readResponseHeader();
-
-        $this->ResponseHeader = new ResponseHeader($responseHeaderRaw, $this->UrlDescriptor->url_rebuild);
-
-        $responseBodyRaw = $this->readResponseBody();
-
-        $Socket->close();
+        $this->Socket->send($requestHeaderRaw);
     }
 
     /**

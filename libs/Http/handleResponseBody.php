@@ -9,28 +9,25 @@
 namespace PhCrawler\Http;
 
 
+use PhCrawler\Benchmark;
 use PhCrawler\Http\Enums\Protocols;
+use PhCrawler\Http\Enums\Timer;
 use PhCrawler\Http\Utils\EncodingUtil;
 
 trait handleResponseBody
 {
     public function readResponseBody() {
-
-        $Socket = $this->Socket;
-
-        // Init
-        $source_portion = "";
+        //init
+        $this->content_bytes_received = 0;
         $source_complete = "";
         $this->document_received_completely = true;
         $this->document_completed = false;
         $gzip_encoded_content = null;
 
+        Benchmark::start(Timer::DATA_TRANSFER);
 
         while($this->document_completed == false) {
             $content_chunk = $this->readResponseBodyChunk();
-
-            $source_portion .= $content_chunk;
-
             // Check if content is gzip-encoded (check only first chunk)
             if ($gzip_encoded_content === null)
             {
@@ -43,11 +40,14 @@ trait handleResponseBody
             $source_complete .= $content_chunk;
 
             if ($this->document_completed == true && $gzip_encoded_content == true)
-                $source_complete = $source_portion = EncodingUtil::decodeGZipContent($source_complete);
-
+                $source_complete = EncodingUtil::decodeGZipContent($source_complete);
 
         }
-             var_dump($source_complete);
+
+        Benchmark::stop(Timer::DATA_TRANSFER);
+
+        $this->data_transfer_time = Benchmark::getElapsedTime(Timer::DATA_TRANSFER);
+
         return $source_complete;
     }
 
@@ -61,13 +61,12 @@ trait handleResponseBody
         $this->document_completed = false;
 
         // If chunked encoding and protocol to use is HTTP 1.1
-        if ($this->http_protocol_version == Protocols::HTTP_1_1 && $this->ResponseHeader->isTransferEncodingChunked())
+        if ($this->isResponseBodyChunked())
         {
             // Read size of next chunk
             $chunk_line = $Socket->gets();
             if (trim($chunk_line) == "") $chunk_line = $Socket->gets();
             $current_chunk_size = hexdec(trim($chunk_line));
-
         }
         else
         {
@@ -85,9 +84,10 @@ trait handleResponseBody
             $Socket->setTimeOut();
 
             // Set byte-buffer to bytes in socket-buffer (Fix for SSL-hang-bug #56, thanks to MadEgg!)
-            $status = $Socket->getStatus();
-            if ($status["unread_bytes"] > 0)
-                $read_byte_buffer = $status["unread_bytes"];
+            $unread_bytes = $Socket->getUnreadBytes();
+
+            if ($unread_bytes > 0)
+                $read_byte_buffer = $unread_bytes;
             else
                 $read_byte_buffer = $this->socket_read_buffer_size;
 
@@ -103,15 +103,13 @@ trait handleResponseBody
 
             $source_chunk .= $line_read;
             $line_length = strlen($line_read);
-            $this->content_bytes_received += $line_length;
-            $this->global_traffic_count += $line_length;
             $bytes_received += $line_length;
 
-            // Check socket-status
-            $status = $Socket->getStatus();
+            $this->content_bytes_received += $line_length;
+            $this->global_traffic_count += $line_length;
 
             // Check for EOF
-            if ($status["unread_bytes"] == 0 && $Socket->isEOF())
+            if ($Socket->getUnreadBytes() == 0 && $Socket->isEOF())
             {
                 $stop_receiving = true;
                 $this->document_completed = true;
@@ -128,14 +126,14 @@ trait handleResponseBody
             }
 
             // Check if content-length stated in the header is reached
-            if ($this->ResponseHeader->content_length == $this->content_bytes_received)
+            if ($this->isReachedContentLength())
             {
                 $stop_receiving = true;
                 $this->document_completed = true;
             }
 
-            // Check if contentsize-limit is reached
-            if ($this->content_size_limit > 0 && $this->content_size_limit <= $this->content_bytes_received)
+            // Check if content-size-limit is reached
+            if ($this->isReachedContentSizeLimit())
             {
                 $this->document_received_completely = false;
                 $stop_receiving = true;
@@ -144,6 +142,18 @@ trait handleResponseBody
 
         }
         return $source_chunk;
+    }
+
+    protected function isResponseBodyChunked() {
+        return $this->http_protocol_version == Protocols::HTTP_1_1 && $this->ResponseHeader->isTransferEncodingChunked();
+    }
+
+    protected function isReachedContentLength() {
+        return $this->ResponseHeader->content_length == $this->content_bytes_received;
+    }
+
+    protected function isReachedContentSizeLimit() {
+        return $this->content_size_limit > 0 && $this->content_size_limit <= $this->content_bytes_received;
     }
 
 }

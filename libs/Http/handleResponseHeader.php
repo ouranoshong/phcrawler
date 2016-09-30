@@ -9,27 +9,40 @@
 namespace PhCrawler\Http;
 
 
+use PhCrawler\Benchmark;
+use PhCrawler\Http\Enums\RequestErrors;
+use PhCrawler\Http\Enums\Timer;
+
 trait handleResponseHeader
 {
 
     public function readResponseHeader() {
         $Socket = $this->Socket;
 
-        $status = $Socket->getStatus();
+        Benchmark::reset(Timer::SERVER_RESPONSE);
+        Benchmark::start(Timer::SERVER_RESPONSE);
+
         $source_read = '';
         $header = '';
         $server_response = false;
 
         while( !$Socket->isEOF() ) {
-            $Socket->setTimeOut();
 
+            $Socket->setTimeOut();
             $line_read = $Socket->gets();
 
             if ($server_response == false) {
+
+                $this->server_response_time = Benchmark::stop(Timer::SERVER_RESPONSE);
                 $server_response = true;
+
+                Benchmark::reset(Timer::DATA_TRANSFER);
+                Benchmark::start(Timer::DATA_TRANSFER);
+
             }
 
             $source_read .= $line_read;
+            $this->global_traffic_count += strlen($line_read);
 
             if ($Socket->checkTimeoutStatus()) {
                 $this->error_code = $Socket->error_code;
@@ -52,6 +65,8 @@ trait handleResponseHeader
             }
         }
 
+        Benchmark::stop(Timer::DATA_TRANSFER);
+
         // Header was found
         if ($header != "")
         {
@@ -62,7 +77,7 @@ trait handleResponseHeader
         // No header found
         if ($header == "")
         {
-            $this->server_response_time = 0;
+            $this->server_response_time = null;
             $this->error_code = RequestErrors::ERROR_NO_HTTP_HEADER;
             $this->error_message = "Host doesn't respond with a HTTP-header.";
             return null;

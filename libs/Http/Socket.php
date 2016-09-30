@@ -29,7 +29,7 @@ class Socket
      */
     protected $_socket;
 
-    public $timeout = 60;
+    public $timeout = 6;
     public $error_code;
     public $error_message;
     public $flag = STREAM_CLIENT_CONNECT;
@@ -86,7 +86,7 @@ class Socket
         if (!$this->canOpen()) return false;
 
         if ($context = $this->getClientContext()) {
-            $this->_socket = stream_socket_client(
+            $this->_socket = @stream_socket_client(
                 $this->getClientRemoteURI(),
                 $this->error_code,
                 $this->error_message,
@@ -164,7 +164,7 @@ class Socket
 
     public function send($message = '')
     {
-        return fwrite($this->_socket, $message, strlen($message));
+        return @fwrite($this->_socket, $message, strlen($message));
     }
 
     public function read($buffer = 1024) {
@@ -202,6 +202,10 @@ class Socket
 
     public function isEOF() {
         return ($this->getStatus()["eof"] == true || feof($this->_socket) == true);
+    }
+
+    public function getUnreadBytes() {
+        return $this->getStatus()['unread_bytes'];
     }
 
 }
