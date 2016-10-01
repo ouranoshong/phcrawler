@@ -25,69 +25,14 @@ trait handleRequestHeader
 {
 
     protected function initRequestHeader() {
-        if (count($this->post_data) > 0) $this->method = HttpClient::METHOD_POST;
-        else $this->method = HttpClient::METHOD_GET;
+
+        if (!$this->method) {
+            if (count($this->post_data) > 0) $this->method = HttpClient::METHOD_POST;
+            else $this->method = HttpClient::METHOD_GET;
+        }
+
     }
 
-    /**
-     * @return array
-     */
-    public function buildRequestHeaderLines()
-    {
-        $this->initRequestHeader();
-
-        $Request = new Request();
-
-        $Request->firstLine = $this->buildRequestFirstLine();
-
-        $Request->addHeader('Host', $this->UrlPartsDescriptor->host)
-            ->addHeader('User-Agent', $this->userAgent)
-            ->addHeader('Accept', '*/*');
-
-        if ($this->request_gzip_content === true) {
-            $Request->addHeader('Accept-Encoding', 'gzip, deflate');
-        }
-
-        if($this->UrlDescriptor->refering_url){
-            $Request->addHeader('Referer', $this->UrlDescriptor->refering_url);
-        }
-
-        if (count($this->cookie_data)) {
-            $Request->addCookies($this->cookie_data);
-        }
-
-        $UrlParts = $this->UrlPartsDescriptor;
-
-        if ($UrlParts instanceof UrlPartsDescriptor &&
-            ($UrlParts->auth_username != "") &&
-            ($UrlParts->auth_password != "")) {
-
-            $Request->addHeaderAuth($UrlParts->auth_username, $UrlParts->auth_password);
-        }
-
-        $Proxy = $this->ProxyDescriptor;
-
-        if ($Proxy instanceof ProxyDescriptor &&
-            $Proxy->username != null) {
-            $Request->addHeaderAuthProxy($Proxy->username, $Proxy->password);
-        }
-
-        $Request->addHeader('Connection', 'closed');
-
-
-        if ($this->method == self::METHOD_POST) {
-            // Post-Content bauen
-            $Request->addEntities($this->post_data);
-            $post_content =  $Request->buildEntityBody();
-
-            $Request->addHeader('Content-Type', 'multipart/form-data; boundary='.RequestFieldEnum::ENTITY_BOUNDARY);
-
-            $Request->addHeader('Content-length', strlen($post_content));
-        }
-
-        return (string)$Request;
-
-    }
 
     /**
      * @return string
@@ -140,7 +85,58 @@ trait handleRequestHeader
         return $query;
     }
 
-    public function buildRequestHeaderRaw() {
-       return $this->buildRequestHeaderLines();
+    protected   function buildRequestHeaderRaw() {
+        $this->initRequestHeader();
+
+        $Request = new Request();
+
+        $Request->firstLine = $this->buildRequestFirstLine();
+
+        $Request->addHeader('Host', $this->UrlPartsDescriptor->host)
+            ->addHeader('User-Agent', $this->userAgent)
+            ->addHeader('Accept', '*/*');
+
+        if ($this->request_gzip_content === true) {
+            $Request->addHeader('Accept-Encoding', 'gzip, deflate');
+        }
+
+        if($this->UrlDescriptor->refering_url){
+            $Request->addHeader('Referer', $this->UrlDescriptor->refering_url);
+        }
+
+        if (count($this->cookie_data)) {
+            $Request->addCookies($this->cookie_data);
+        }
+
+        $UrlParts = $this->UrlPartsDescriptor;
+
+        if ($UrlParts instanceof UrlPartsDescriptor &&
+            ($UrlParts->auth_username != "") &&
+            ($UrlParts->auth_password != "")) {
+
+            $Request->addHeaderAuth($UrlParts->auth_username, $UrlParts->auth_password);
+        }
+
+        $Proxy = $this->ProxyDescriptor;
+
+        if ($Proxy instanceof ProxyDescriptor &&
+            $Proxy->username != null) {
+            $Request->addHeaderAuthProxy($Proxy->username, $Proxy->password);
+        }
+
+        $Request->addHeader('Connection', 'closed');
+
+
+        if ($this->method == self::METHOD_POST) {
+            // Post-Content bauen
+            $Request->addEntities($this->post_data);
+            $post_content =  $Request->buildEntityBody();
+
+            $Request->addHeader('Content-Type', 'multipart/form-data; boundary='.RequestFieldEnum::ENTITY_BOUNDARY);
+
+            $Request->addHeader('Content-length', strlen($post_content));
+        }
+
+        return (string)$Request;
     }
 }

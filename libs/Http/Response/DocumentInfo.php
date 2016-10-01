@@ -6,7 +6,7 @@
  * Time: 5:20 PM
  */
 
-namespace PhCrawler\Http;
+namespace PhCrawler\Http\Response;
 
 
 class DocumentInfo

@@ -6,7 +6,7 @@
  * Time: 4:10 PM
  */
 
-namespace PhCrawler\Http;
+namespace PhCrawler\Http\Response;
 
 
 use PhCrawler\Http\Descriptors\CookieDescriptor;

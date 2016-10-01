@@ -16,7 +16,7 @@ use PhCrawler\Http\Utils\EncodingUtil;
 
 trait handleResponseBody
 {
-    public function readResponseBody() {
+    protected function readResponseBody() {
         //init
         $this->content_bytes_received = 0;
         $source_complete = "";
@@ -51,7 +51,7 @@ trait handleResponseBody
         return $source_complete;
     }
 
-    public function readResponseBodyChunk() {
+    protected function readResponseBodyChunk() {
         /**@var $Socket Socket*/
         $Socket = $this->Socket;
 

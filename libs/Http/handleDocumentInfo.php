@@ -14,6 +14,8 @@ namespace PhCrawler\Http;
 
 use PhCrawler\Http\Descriptors\UrlDescriptor;
 use PhCrawler\Http\Descriptors\UrlPartsDescriptor;
+use PhCrawler\Http\Response\DocumentInfo;
+use PhCrawler\Http\Response\ResponseHeader;
 
 trait handleDocumentInfo
 {
@@ -67,5 +69,17 @@ trait handleDocumentInfo
         $this->DocumentInfo->data_transfer_rate = $dtr_values["data_transfer_rate"];
         $this->DocumentInfo->unbuffered_bytes_read = $dtr_values["unbuffered_bytes_read"];
         $this->DocumentInfo->data_transfer_time = $dtr_values["data_transfer_time"];
+    }
+
+    protected function setDocumentStatistics() {
+        $this->DocumentInfo->received_completely = $this->document_received_completely;
+        $this->DocumentInfo->bytes_received = $this->content_bytes_received;
+        $this->DocumentInfo->header_bytes_received = $this->header_bytes_received;
+
+        $dtr_values = $this->calculateDataTransferRateValues();
+        if ($dtr_values != null)
+        {
+            $this->setDocumentDTR($dtr_values);
+        }
     }
 }

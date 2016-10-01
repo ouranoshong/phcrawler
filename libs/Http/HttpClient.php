@@ -13,7 +13,10 @@ use PhCrawler\Benchmark;
 use PhCrawler\Http\Descriptors\ProxyDescriptor;
 use PhCrawler\Http\Descriptors\UrlDescriptor;
 use PhCrawler\Http\Descriptors\UrlPartsDescriptor;
+use PhCrawler\Http\Enums\Protocols;
 use PhCrawler\Http\Enums\Timer;
+use PhCrawler\Http\Response\DocumentInfo;
+use PhCrawler\Http\Response\ResponseHeader;
 
 /**
  * Class Request
@@ -58,16 +61,16 @@ class HttpClient
     /**
      * @var string
      */
-    public $method;
+    protected $method;
     /**
      * @var string
      */
-    public $url;
+    protected $url;
 
     /**
      * @var string
      */
-    public $http_protocol_version;
+    protected $http_protocol_version;
 
     /**
      * @var UrlDescriptor
@@ -87,31 +90,33 @@ class HttpClient
     /**
      * @var array
      */
-    public $cookie_data = [];
+    protected $cookie_data = [];
 
     /**
      * @var array
      */
-    public $post_data = [];
+    protected $post_data = [];
 
     /**
      * @var int
      */
-    public $header_bytes_received = 0;
+    protected $header_bytes_received = 0;
 
     /**
      * @var null
      */
-    public $server_response_time = null;
+    protected $server_response_time = null;
 
     /**
      * @var
      */
-    public $error_code;
+    protected $error_code;
+
     /**
      * @var
      */
-    public $error_message;
+    protected $error_message;
+
 
     /**
      * @var ResponseHeader
@@ -126,7 +131,7 @@ class HttpClient
     /**
      * @var Socket
      */
-    public $Socket;
+    protected $Socket;
 
     /**
      * @var
@@ -142,11 +147,6 @@ class HttpClient
      * @var null | \Closure
      */
     public $response_header_check_callback_function = null;
-
-    /**
-     * @var null
-     */
-    public $data_transfer_time = null;
 
     /**
      * @var int
@@ -180,18 +180,129 @@ class HttpClient
      */
     protected $global_traffic_count = 0;
 
+    /**
+     * @var null
+     */
     protected $server_connect_time = null;
 
+    /**
+     * @var null
+     */
     protected $socket_pre_fill_size = null;
 
+    /**
+     * @var null
+     */
     protected $receive_content_types = null;
+
+
+    /**
+     * Sets the URL for the request.
+     *
+     * @param URLDescriptor $UrlDescriptor An URLDescriptor-object containing the URL to request
+     */
+    public function setUrl(URLDescriptor $UrlDescriptor)
+    {
+        $this->UrlDescriptor = $UrlDescriptor;
+
+        if (!$this->UrlPartsDescriptor) {
+
+            $this->UrlPartsDescriptor = new UrlPartsDescriptor();
+
+        }
+
+        $this->UrlPartsDescriptor->init($this->UrlDescriptor->url_rebuild);
+    }
+
+    /**
+     * Adds a cookie to send with the request.
+     *
+     * @param string $name Cookie-name
+     * @param string $value Cookie-value
+     */
+    public function addCookie($name, $value)
+    {
+        $this->cookie_data[$name] = $value;
+    }
+
+    /**
+     * Adds a cookie to send with the request.
+     *
+     * @param CookieDescriptor $Cookie
+     */
+    public function addCookieDescriptor(CookieDescriptor $Cookie)
+    {
+        $this->addCookie($Cookie->name, $Cookie->value);
+    }
+
+    /**
+     * Adds a bunch of cookies to send with the request
+     *
+     * @param array $cookies Numeric array containins cookies as CookieDescriptor-objects
+     */
+    public function addCookieDescriptors($cookies)
+    {
+        $cnt = count($cookies);
+        for ($x=0; $x<$cnt; $x++)
+        {
+            $this->addCookieDescriptor($cookies[$x]);
+        }
+    }
+
+    /**
+     * Removes all cookies to send with the request.
+     */
+    public function clearCookies()
+    {
+        $this->cookie_data = array();
+    }
+
+
+    /**
+     * @param $key
+     * @param $value
+     */
+    public function addPostData($key, $value)
+    {
+        $this->post_data[$key] = $value;
+    }
+
+    /**
+     * Removes all post-data to send with the request.
+     */
+    public function clearPostData()
+    {
+        $this->post_data = array();
+    }
+
+
+    public function setProxy(ProxyDescriptor $Proxy)
+    {
+        $this->ProxyDescriptor = $Proxy;
+    }
+
+
+    /**
+     * @param $username
+     * @param $password
+     */
+    public function setBasicAuthentication($username, $password)
+    {
+        if (!($this->UrlPartsDescriptor instanceof UrlPartsDescriptor)) {
+            $this->UrlPartsDescriptor = new UrlPartsDescriptor();
+        }
+
+        $this->UrlPartsDescriptor->auth_username = $username;
+        $this->UrlPartsDescriptor->auth_password = $password;
+    }
+
 
     /**
      *
      */
     public function fetch() {
 
-            $this->initDocumentInfo();
+            $this->init();
 
             if (!$this->openSocket()) return $this->DocumentInfo;
 
@@ -200,6 +311,28 @@ class HttpClient
             return $this->readResponseContent();
     }
 
+    /**
+     * @throws \Exception
+     */
+    protected function init() {
+        if (!$this->UrlDescriptor) {
+            throw new \Exception('Require connection information!');
+        }
+
+        if (!$this->UrlPartsDescriptor) {
+            $this->UrlPartsDescriptor = new UrlPartsDescriptor(
+                $this->UrlDescriptor->url_rebuild
+            );
+        } else if (!$this->UrlPartsDescriptor->host) {
+            $this->UrlPartsDescriptor->init($this->UrlDescriptor->url_rebuild);
+        }
+
+        if (!$this->http_protocol_version) {
+            $this->http_protocol_version = Protocols::HTTP_1_1;
+        }
+
+        $this->initDocumentInfo();
+    }
 
     /**
      * @return bool
@@ -240,7 +373,11 @@ class HttpClient
 
     }
 
+    /**
+     * @return \PhCrawler\Http\DocumentInfo
+     */
     protected function readResponseContent() {
+
         $responseHeaderRaw = $this->readResponseHeader();
 
         $this->setDocumentHeaderReceived($responseHeaderRaw);
@@ -265,16 +402,7 @@ class HttpClient
 
         $this->setDocumentContent($this->readResponseBody());
 
-        $this->DocumentInfo->received_completely = $this->document_received_completely;
-        $this->document_completed = $this->document_completed;
-        $this->DocumentInfo->bytes_received = $this->content_bytes_received;
-        $this->DocumentInfo->header_bytes_received = $this->header_bytes_received;
-
-        $dtr_values = $this->calculateDataTransferRateValues();
-        if ($dtr_values != null)
-        {
-            $this->setDocumentDTR($dtr_values);
-        }
+        $this->setDocumentStatistics();
 
         return $this->DocumentInfo;
     }
@@ -309,36 +437,46 @@ class HttpClient
         return $dataValues;
     }
 
+
     /**
-     * @return RequestHeader
+     * @param null $time
      */
-    protected function RequestHeader()
-    {
-        return (new RequestHeader($this));
-    }
-
-
     protected function setServerConnectTime($time = null) {
         $this->DocumentInfo->server_connect_time = $time;
     }
 
+    /**
+     * @param null $time
+     */
     protected function setServerResponseTime($time = null) {
         $this->DocumentInfo->server_response_time = $time;
     }
 
+    /**
+     * @param null $time
+     */
     protected function setDataTransferTime($time = null) {
         $this->DocumentInfo->data_transfer_time = $time;
     }
 
+    /**
+     * @return float
+     */
     public function getDataTransferTime() {
         return $this->DocumentInfo->data_transfer_time;
     }
 
+    /**
+     * @param $message
+     */
     protected function setErrorMessage($message) {
         $this->DocumentInfo->error_occured = true;
         $this->DocumentInfo->error_message = $message;
     }
 
+    /**
+     * @param $code
+     */
     protected function setErrorCode($code) {
         $this->DocumentInfo->error_occured = true;
         $this->DocumentInfo->error_code = $code;
