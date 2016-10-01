@@ -20,17 +20,12 @@ use PhCrawler\Http\Enums\Timer;
  *
  * @package PhCrawler\Http
  */
-class Request
+class HttpClient
 {
     use handleDocumentInfo,
         handleRequestHeader,
         handleResponseHeader,
         handleResponseBody;
-
-    /**
-     *
-     */
-    const HEADER_SEPARATOR = "\r\n";
 
     /**
      *
@@ -250,7 +245,6 @@ class Request
 
         $this->setDocumentHeaderReceived($responseHeaderRaw);
 
-
         $this->ResponseHeader = new ResponseHeader($responseHeaderRaw, $this->UrlDescriptor->url_rebuild);
 
         $this->setDocumentResponseHeader($this->ResponseHeader);
@@ -290,6 +284,7 @@ class Request
      */
     protected function calculateDataTransferRateValues()
     {
+
         $dataValues = array();
 
         $data_transfer_time = $this->getDataTransferTime();
@@ -299,6 +294,7 @@ class Request
 
         // To calulate the real data transfer rate, these bytes have to be substractred from the received
         // bytes beofre calulating the rate.
+
         if ($data_transfer_time > 0 && $this->content_bytes_received > 4 * $this->socket_pre_fill_size)
         {
             $dataValues["unbuffered_bytes_read"] = $this->content_bytes_received + $this->header_bytes_received - $this->socket_pre_fill_size;

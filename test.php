@@ -9,17 +9,21 @@
 
 require 'vendor/autoload.php';
 
-use PhCrawler\Http\Request;
+use PhCrawler\Http\HttpClient;
 
-$Request = new Request();
+$Request = new HttpClient();
 // https://googleads.g.doubleclick.net/pagead/html/r20160922/r20160727/zrt_lookup.html
 //$Request->UrlDescriptor = new \PhCrawler\Http\Descriptors\UrlDescriptor(
 //    'https://googleads.g.doubleclick.net/pagead/html/r20160922/r20160727/zrt_lookup.html'
 //);
 
 $Request->UrlDescriptor = new \PhCrawler\Http\Descriptors\UrlDescriptor(
-    'http://www.baidu.com'
+    'localhost:8080/server.php?query=GET'
 );
+
+$Request->cookie_data = ['coookie'=> 'cookie'];
+
+$Request->post_data = ['q'=>'hello'];
 
 $Request->UrlPartsDescriptor = new \PhCrawler\Http\Descriptors\UrlPartsDescriptor($Request->UrlDescriptor->url_rebuild);
 
