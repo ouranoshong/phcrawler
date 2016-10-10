@@ -10,9 +10,9 @@ namespace PhCrawler\Http;
 
 
 use PhCrawler\Benchmark;
-use PhCrawler\Http\Descriptors\ProxyDescriptor;
-use PhCrawler\Http\Descriptors\UrlDescriptor;
-use PhCrawler\Http\Descriptors\UrlPartsDescriptor;
+use PhCrawler\Descriptors\ProxyDescriptor;
+use PhCrawler\Descriptors\UrlDescriptor;
+use PhCrawler\Descriptors\UrlPartsDescriptor;
 use PhCrawler\Http\Enums\Protocols;
 use PhCrawler\Http\Enums\Timer;
 use PhCrawler\Http\Response\DocumentInfo;

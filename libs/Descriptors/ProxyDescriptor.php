@@ -6,7 +6,7 @@
  * Time: 2:21 PM
  */
 
-namespace PhCrawler\Http\Descriptors;
+namespace PhCrawler\Descriptors;
 
 
 /**

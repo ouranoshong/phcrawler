@@ -6,7 +6,7 @@
  * Time: 3:29 PM
  */
 
-namespace PhCrawler\Http\Descriptors;
+namespace PhCrawler\Descriptors;
 
 class CookieDescriptor
 {

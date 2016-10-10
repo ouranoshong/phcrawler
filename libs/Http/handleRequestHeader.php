@@ -9,12 +9,12 @@
 namespace PhCrawler\Http;
 
 
-use PhCrawler\Http\Descriptors\ProxyDescriptor;
-use PhCrawler\Http\Descriptors\UrlPartsDescriptor;
+use PhCrawler\Descriptors\ProxyDescriptor;
+use PhCrawler\Descriptors\UrlPartsDescriptor;
 use PhCrawler\Http\Enums\RequestFieldEnum;
 use PhCrawler\Http\Request\Request;
-use PhCrawler\Http\Utils\EncodingUtil;
-use PhCrawler\Http\Utils\UrlUtil;
+use PhCrawler\Utils\EncodingUtil;
+use PhCrawler\Utils\UrlUtil;
 
 /**
  * Class RequestHeader

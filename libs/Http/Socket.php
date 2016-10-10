@@ -9,10 +9,10 @@
 namespace PhCrawler\Http;
 
 
-use PhCrawler\Http\Descriptors\ProxyDescriptor;
-use PhCrawler\Http\Descriptors\UrlPartsDescriptor;
+use PhCrawler\Descriptors\ProxyDescriptor;
+use PhCrawler\Descriptors\UrlPartsDescriptor;
 use PhCrawler\Http\Enums\RequestErrors;
-use PhCrawler\Http\Utils\DNSUtil;
+use PhCrawler\Utils\DNSUtil;
 
 /**
  * Class Socket

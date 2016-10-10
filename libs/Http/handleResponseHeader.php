@@ -13,7 +13,7 @@ use PhCrawler\Benchmark;
 use PhCrawler\Http\Enums\RequestErrors;
 use PhCrawler\Http\Enums\Timer;
 use PhCrawler\Http\Response\ResponseHeader;
-use PhCrawler\Http\Utils\UrlUtil;
+use PhCrawler\Utils\UrlUtil;
 
 trait handleResponseHeader
 {

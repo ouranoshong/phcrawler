@@ -12,7 +12,7 @@ namespace PhCrawler\Http;
 use PhCrawler\Benchmark;
 use PhCrawler\Http\Enums\Protocols;
 use PhCrawler\Http\Enums\Timer;
-use PhCrawler\Http\Utils\EncodingUtil;
+use PhCrawler\Utils\EncodingUtil;
 
 trait handleResponseBody
 {

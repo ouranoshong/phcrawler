@@ -6,7 +6,7 @@
  * Time: 2:52 PM
  */
 
-namespace PhCrawler\Http\Utils;
+namespace PhCrawler\Utils;
 
 
 class DNSUtil

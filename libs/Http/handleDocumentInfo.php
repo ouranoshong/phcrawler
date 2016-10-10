@@ -12,8 +12,8 @@
 namespace PhCrawler\Http;
 
 
-use PhCrawler\Http\Descriptors\UrlDescriptor;
-use PhCrawler\Http\Descriptors\UrlPartsDescriptor;
+use PhCrawler\Descriptors\UrlDescriptor;
+use PhCrawler\Descriptors\UrlPartsDescriptor;
 use PhCrawler\Http\Response\DocumentInfo;
 use PhCrawler\Http\Response\ResponseHeader;
 

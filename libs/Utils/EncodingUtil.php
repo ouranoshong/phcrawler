@@ -6,7 +6,7 @@
  * Time: 下午10:27
  */
 
-namespace PhCrawler\Http\Utils;
+namespace PhCrawler\Utils;
 
 
 class EncodingUtil

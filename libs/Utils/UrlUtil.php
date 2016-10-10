@@ -6,10 +6,10 @@
  * Time: 1:59 PM
  */
 
-namespace PhCrawler\Http\Utils;
+namespace PhCrawler\Utils;
 
 
-use PhCrawler\Http\Descriptors\UrlPartsDescriptor;
+use PhCrawler\Descriptors\UrlPartsDescriptor;
 
 class UrlUtil
 {

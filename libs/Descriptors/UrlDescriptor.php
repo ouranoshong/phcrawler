@@ -6,7 +6,7 @@
  * Time: 2:22 PM
  */
 
-namespace PhCrawler\Http\Descriptors;
+namespace PhCrawler\Descriptors;
 
 
 class UrlDescriptor
