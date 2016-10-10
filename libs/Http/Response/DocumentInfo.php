@@ -181,13 +181,8 @@ class DocumentInfo
      */
     public $http_status_code = null;
 
-    /**
-     * Cookies send by the server.
-     *
-     * @var array Numeric array containing all send cookies as {@link PHPCrawlerCookieDescriptor}-objects.
-     * @section 2 Content-related information
-     */
-    public $cookies = array();
+
+    public $response_cookies = array();
 
     /**
      * An numeric array containing information about all links that were found in the source of the page.

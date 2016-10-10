@@ -31,7 +31,7 @@ trait handleDocumentInfo
     protected function setDocumentResponseHeader(ResponseHeader $responseHeader) {
         $this->DocumentInfo->http_status_code = $responseHeader->http_status_code;
         $this->DocumentInfo->content_type = $responseHeader->content_type;
-        $this->DocumentInfo->cookies = $responseHeader->cookies;
+        $this->DocumentInfo->response_cookies = $responseHeader->cookies;
         $this->setDocumentHeaderReceived($responseHeader->header_raw);
     }
 
