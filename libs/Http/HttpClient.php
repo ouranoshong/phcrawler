@@ -75,12 +75,12 @@ class HttpClient
     /**
      * @var LinkDescriptor
      */
-    public $UrlDescriptor;
+    public $LinkDescriptor;
 
     /**
      * @var LinkPartsDescriptor
      */
-    public $UrlPartsDescriptor;
+    public $LinkPartsDescriptor;
 
     /**
      * @var ProxyDescriptor
@@ -203,15 +203,15 @@ class HttpClient
      */
     public function setUrl(LinkDescriptor $UrlDescriptor)
     {
-        $this->UrlDescriptor = $UrlDescriptor;
+        $this->LinkDescriptor = $UrlDescriptor;
 
-        if (!$this->UrlPartsDescriptor) {
+        if (!$this->LinkPartsDescriptor) {
 
-            $this->UrlPartsDescriptor = new LinkPartsDescriptor();
+            $this->LinkPartsDescriptor = new LinkPartsDescriptor();
 
         }
 
-        $this->UrlPartsDescriptor->init($this->UrlDescriptor->url_rebuild);
+        $this->LinkPartsDescriptor->init($this->LinkDescriptor->url_rebuild);
     }
 
     /**
@@ -288,12 +288,12 @@ class HttpClient
      */
     public function setBasicAuthentication($username, $password)
     {
-        if (!($this->UrlPartsDescriptor instanceof LinkPartsDescriptor)) {
-            $this->UrlPartsDescriptor = new LinkPartsDescriptor();
+        if (!($this->LinkPartsDescriptor instanceof LinkPartsDescriptor)) {
+            $this->LinkPartsDescriptor = new LinkPartsDescriptor();
         }
 
-        $this->UrlPartsDescriptor->auth_username = $username;
-        $this->UrlPartsDescriptor->auth_password = $password;
+        $this->LinkPartsDescriptor->auth_username = $username;
+        $this->LinkPartsDescriptor->auth_password = $password;
     }
 
 
@@ -315,16 +315,16 @@ class HttpClient
      * @throws \Exception
      */
     protected function init() {
-        if (!$this->UrlDescriptor) {
+        if (!$this->LinkDescriptor) {
             throw new \Exception('Require connection information!');
         }
 
-        if (!$this->UrlPartsDescriptor) {
-            $this->UrlPartsDescriptor = new LinkPartsDescriptor(
-                $this->UrlDescriptor->url_rebuild
+        if (!$this->LinkPartsDescriptor) {
+            $this->LinkPartsDescriptor = new LinkPartsDescriptor(
+                $this->LinkDescriptor->url_rebuild
             );
-        } else if (!$this->UrlPartsDescriptor->host) {
-            $this->UrlPartsDescriptor->init($this->UrlDescriptor->url_rebuild);
+        } else if (!$this->LinkPartsDescriptor->host) {
+            $this->LinkPartsDescriptor->init($this->LinkDescriptor->url_rebuild);
         }
 
         if (!$this->http_protocol_version) {
@@ -340,7 +340,7 @@ class HttpClient
     protected function openSocket() {
 
         $this->Socket = $Socket = new Socket();
-        $Socket->UrlParsDescriptor = $this->UrlPartsDescriptor;
+        $Socket->LinkParsDescriptor = $this->LinkPartsDescriptor;
 
         Benchmark::reset(Timer::SERVER_CONNECT);
         Benchmark::start(Timer::SERVER_CONNECT);
@@ -382,7 +382,7 @@ class HttpClient
 
         $this->setDocumentHeaderReceived($responseHeaderRaw);
 
-        $this->ResponseHeader = new ResponseHeader($responseHeaderRaw, $this->UrlDescriptor->url_rebuild);
+        $this->ResponseHeader = new ResponseHeader($responseHeaderRaw, $this->LinkDescriptor->url_rebuild);
 
         $this->setDocumentResponseHeader($this->ResponseHeader);
 

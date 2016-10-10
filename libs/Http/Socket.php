@@ -43,16 +43,17 @@ class Socket
     /**
      * @var LinkPartsDescriptor
      */
-    public $UrlParsDescriptor;
+    public $LinkParsDescriptor;
 
 
     const SOCKET_PROTOCOL_PREFIX_SSL = 'ssl://';
 
     public $header_response;
-    public $response_body_complety;
+
+    public $response_body_completely;
 
     protected function isSSLConnection() {
-        return $this->UrlParsDescriptor instanceof LinkPartsDescriptor && $this->UrlParsDescriptor->isSSL();
+        return $this->LinkParsDescriptor instanceof LinkPartsDescriptor && $this->LinkParsDescriptor->isSSL();
     }
 
     protected function isProxyConnection() {
@@ -61,7 +62,7 @@ class Socket
 
     protected function canOpen() {
 
-        if (!($this->UrlParsDescriptor instanceof LinkPartsDescriptor)) {
+        if (!($this->LinkParsDescriptor instanceof LinkPartsDescriptor)) {
 
             $this->error_code = RequestErrors::ERROR_HOST_UNREACHABLE;
             $this->error_message = "Require connection information!";
@@ -71,7 +72,7 @@ class Socket
 
         if ($this->isSSLConnection() && !extension_loaded("openssl"))
         {
-            $UrlParts = $this->UrlParsDescriptor;
+            $UrlParts = $this->LinkParsDescriptor;
             $this->error_code = RequestErrors::ERROR_SSL_NOT_SUPPORTED;
             $this->error_message = "Error connecting to ".$UrlParts->protocol.$UrlParts->host.": SSL/HTTPS-requests not supported, extension openssl not installed.";
             return false;
@@ -120,7 +121,7 @@ class Socket
             }
             else
             {
-                $UrlParts = $this->UrlParsDescriptor;
+                $UrlParts = $this->LinkParsDescriptor;
                 $this->error_code = RequestErrors::ERROR_HOST_UNREACHABLE;
                 $this->error_message = "Error connecting to ".$UrlParts->protocol.$UrlParts->host.": Host unreachable (".$this->error_message.").";
                 return false;
@@ -138,11 +139,11 @@ class Socket
             $port = $this->ProxyDescriptor->port;
         } else {
 
-            $host = DNSUtil::getIpByHostName($this->UrlParsDescriptor->host);
-            $port = $this->UrlParsDescriptor->port;
+            $host = DNSUtil::getIpByHostName($this->LinkParsDescriptor->host);
+            $port = $this->LinkParsDescriptor->port;
 
             if ($this->isSSLConnection()) {
-                $host = $this->UrlParsDescriptor->host;
+                $host = $this->LinkParsDescriptor->host;
                 $protocol_prefix = self::SOCKET_PROTOCOL_PREFIX_SSL;
             }
 
@@ -153,7 +154,7 @@ class Socket
 
     protected function getClientContext() {
         if ($this->isSSLConnection()) {
-            return stream_context_create(array('ssl' => array('peer_name' => $this->UrlParsDescriptor->host)));
+            return stream_context_create(array('ssl' => array('peer_name' => $this->LinkParsDescriptor->host)));
         }
         return null;
     }

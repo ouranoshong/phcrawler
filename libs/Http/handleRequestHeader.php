@@ -43,7 +43,7 @@ trait handleRequestHeader
 
         if ($_Proxy instanceof Proxy && $_Proxy->host != null) {
             // A Proxy needs the full qualified URL in the GET or POST headerline.
-            $line = $this->method . " " . $this->UrlDescriptor->url_rebuild . " HTTP/1.0";
+            $line = $this->method . " " . $this->LinkDescriptor->url_rebuild . " HTTP/1.0";
         } else {
             $query = $this->buildRequestQuery();
             $line = $this->method . " " . $query . " HTTP/" . $this->http_protocol_version;
@@ -57,7 +57,7 @@ trait handleRequestHeader
      */
     protected function buildRequestQuery()
     {
-        $UrlParts = $this->UrlPartsDescriptor;
+        $UrlParts = $this->LinkPartsDescriptor;
 
         $query = $UrlParts->path . $UrlParts->file . $UrlParts->query;
         // If string already is a valid URL -> do nothing
@@ -92,7 +92,7 @@ trait handleRequestHeader
 
         $Request->firstLine = $this->buildRequestFirstLine();
 
-        $Request->addHeader('Host', $this->UrlPartsDescriptor->host)
+        $Request->addHeader('Host', $this->LinkPartsDescriptor->host)
             ->addHeader('User-Agent', $this->userAgent)
             ->addHeader('Accept', '*/*');
 
@@ -100,15 +100,15 @@ trait handleRequestHeader
             $Request->addHeader('Accept-Encoding', 'gzip, deflate');
         }
 
-        if($this->UrlDescriptor->refering_url){
-            $Request->addHeader('Referer', $this->UrlDescriptor->refering_url);
+        if($this->LinkDescriptor->refering_url){
+            $Request->addHeader('Referer', $this->LinkDescriptor->refering_url);
         }
 
         if (count($this->cookie_data)) {
             $Request->addCookies($this->cookie_data);
         }
 
-        $UrlParts = $this->UrlPartsDescriptor;
+        $UrlParts = $this->LinkPartsDescriptor;
 
         if ($UrlParts instanceof LinkPartsDescriptor &&
             ($UrlParts->auth_username != "") &&

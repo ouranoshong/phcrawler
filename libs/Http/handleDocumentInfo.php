@@ -23,9 +23,9 @@ trait handleDocumentInfo
 
         $this->DocumentInfo = new DocumentInfo();
 
-        $this->setDocumentUrl($this->UrlDescriptor);
+        $this->setDocumentUrl($this->LinkDescriptor);
 
-        $this->setDocumentUrlParts($this->UrlPartsDescriptor);
+        $this->setDocumentUrlParts($this->LinkPartsDescriptor);
     }
 
     protected function setDocumentResponseHeader(ResponseHeader $responseHeader) {
