@@ -10,7 +10,7 @@ namespace PhCrawler\Http;
 
 
 use PhCrawler\Descriptors\ProxyDescriptor;
-use PhCrawler\Descriptors\UrlPartsDescriptor;
+use PhCrawler\Descriptors\LinkPartsDescriptor;
 use PhCrawler\Http\Enums\RequestFieldEnum;
 use PhCrawler\Http\Request\Request;
 use PhCrawler\Utils\EncodingUtil;
@@ -110,7 +110,7 @@ trait handleRequestHeader
 
         $UrlParts = $this->UrlPartsDescriptor;
 
-        if ($UrlParts instanceof UrlPartsDescriptor &&
+        if ($UrlParts instanceof LinkPartsDescriptor &&
             ($UrlParts->auth_username != "") &&
             ($UrlParts->auth_password != "")) {
 

@@ -10,7 +10,7 @@ namespace PhCrawler\Http;
 
 
 use PhCrawler\Descriptors\ProxyDescriptor;
-use PhCrawler\Descriptors\UrlPartsDescriptor;
+use PhCrawler\Descriptors\LinkPartsDescriptor;
 use PhCrawler\Http\Enums\RequestErrors;
 use PhCrawler\Utils\DNSUtil;
 
@@ -41,7 +41,7 @@ class Socket
      */
     public $ProxyDescriptor;
     /**
-     * @var UrlPartsDescriptor
+     * @var LinkPartsDescriptor
      */
     public $UrlParsDescriptor;
 
@@ -52,7 +52,7 @@ class Socket
     public $response_body_complety;
 
     protected function isSSLConnection() {
-        return $this->UrlParsDescriptor instanceof UrlPartsDescriptor && $this->UrlParsDescriptor->isSSL();
+        return $this->UrlParsDescriptor instanceof LinkPartsDescriptor && $this->UrlParsDescriptor->isSSL();
     }
 
     protected function isProxyConnection() {
@@ -61,7 +61,7 @@ class Socket
 
     protected function canOpen() {
 
-        if (!($this->UrlParsDescriptor instanceof UrlPartsDescriptor)) {
+        if (!($this->UrlParsDescriptor instanceof LinkPartsDescriptor)) {
 
             $this->error_code = RequestErrors::ERROR_HOST_UNREACHABLE;
             $this->error_message = "Require connection information!";

@@ -10,7 +10,7 @@ namespace PhCrawler\Descriptors;
 
 use PhCrawler\Utils\UrlUtil;
 
-class UrlPartsDescriptor
+class LinkPartsDescriptor
 {
 
     const PROTOCOL_PREFIX_HTTP = 'http://';

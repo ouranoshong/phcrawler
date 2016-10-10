@@ -97,7 +97,7 @@ class CookieDescriptor
         $this->path = $path;
         $this->domain = $domain;
 
-        $UrlParts = new UrlPartsDescriptor($source_url);
+        $UrlParts = new LinkPartsDescriptor($source_url);
 
         // Source-domain
         $this->source_domain = $UrlParts->domain;

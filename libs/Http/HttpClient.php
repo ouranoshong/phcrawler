@@ -11,8 +11,8 @@ namespace PhCrawler\Http;
 
 use PhCrawler\Benchmark;
 use PhCrawler\Descriptors\ProxyDescriptor;
-use PhCrawler\Descriptors\UrlDescriptor;
-use PhCrawler\Descriptors\UrlPartsDescriptor;
+use PhCrawler\Descriptors\LinkDescriptor;
+use PhCrawler\Descriptors\LinkPartsDescriptor;
 use PhCrawler\Http\Enums\Protocols;
 use PhCrawler\Http\Enums\Timer;
 use PhCrawler\Http\Response\DocumentInfo;
@@ -73,12 +73,12 @@ class HttpClient
     protected $http_protocol_version;
 
     /**
-     * @var UrlDescriptor
+     * @var LinkDescriptor
      */
     public $UrlDescriptor;
 
     /**
-     * @var UrlPartsDescriptor
+     * @var LinkPartsDescriptor
      */
     public $UrlPartsDescriptor;
 
@@ -199,15 +199,15 @@ class HttpClient
     /**
      * Sets the URL for the request.
      *
-     * @param URLDescriptor $UrlDescriptor An URLDescriptor-object containing the URL to request
+     * @param LinkDescriptor $UrlDescriptor An URLDescriptor-object containing the URL to request
      */
-    public function setUrl(URLDescriptor $UrlDescriptor)
+    public function setUrl(LinkDescriptor $UrlDescriptor)
     {
         $this->UrlDescriptor = $UrlDescriptor;
 
         if (!$this->UrlPartsDescriptor) {
 
-            $this->UrlPartsDescriptor = new UrlPartsDescriptor();
+            $this->UrlPartsDescriptor = new LinkPartsDescriptor();
 
         }
 
@@ -288,8 +288,8 @@ class HttpClient
      */
     public function setBasicAuthentication($username, $password)
     {
-        if (!($this->UrlPartsDescriptor instanceof UrlPartsDescriptor)) {
-            $this->UrlPartsDescriptor = new UrlPartsDescriptor();
+        if (!($this->UrlPartsDescriptor instanceof LinkPartsDescriptor)) {
+            $this->UrlPartsDescriptor = new LinkPartsDescriptor();
         }
 
         $this->UrlPartsDescriptor->auth_username = $username;
@@ -320,7 +320,7 @@ class HttpClient
         }
 
         if (!$this->UrlPartsDescriptor) {
-            $this->UrlPartsDescriptor = new UrlPartsDescriptor(
+            $this->UrlPartsDescriptor = new LinkPartsDescriptor(
                 $this->UrlDescriptor->url_rebuild
             );
         } else if (!$this->UrlPartsDescriptor->host) {

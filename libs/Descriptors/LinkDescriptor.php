@@ -9,7 +9,7 @@
 namespace PhCrawler\Descriptors;
 
 
-class UrlDescriptor
+class LinkDescriptor
 {
     /**
      * The complete, full qualified and normalized URL

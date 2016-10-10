@@ -18,7 +18,7 @@ $Request = new HttpClient();
 //    'https://googleads.g.doubleclick.net/pagead/html/r20160922/r20160727/zrt_lookup.html'
 //);
 
-$Request->setUrl(new \PhCrawler\Descriptors\UrlDescriptor(
+$Request->setUrl(new \PhCrawler\Descriptors\LinkDescriptor(
     'http://www.baidu.com'
 ));
 

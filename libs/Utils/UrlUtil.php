@@ -9,7 +9,7 @@
 namespace PhCrawler\Utils;
 
 
-use PhCrawler\Descriptors\UrlPartsDescriptor;
+use PhCrawler\Descriptors\LinkPartsDescriptor;
 
 class UrlUtil
 {
@@ -174,13 +174,13 @@ class UrlUtil
     /**
      * Reconstructs a full qualified and normalized URL from a given link relating to the URL the link was found in.
      *
-     * @param string $link                           The link (i.e. "../page.htm")
-     * @param UrlPartsDescriptor $BaseUrl  The base-URL the link was found in as UrlPartsDescriptor-object
+     * @param string              $link    The link (i.e. "../page.htm")
+     * @param LinkPartsDescriptor $BaseUrl The base-URL the link was found in as UrlPartsDescriptor-object
      *
      * @return string The rebuild, full qualified and normilazed URL the link is leading to (i.e. "http://www.foo.com/page.htm"),
      *                or NULL if the link couldn't be rebuild correctly.
      */
-    public static function buildURLFromLink($link, UrlPartsDescriptor $BaseUrl)
+    public static function buildURLFromLink($link, LinkPartsDescriptor $BaseUrl)
     {
         $url_parts = $BaseUrl->toArray();
 

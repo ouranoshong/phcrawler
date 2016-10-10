@@ -12,8 +12,8 @@
 namespace PhCrawler\Http;
 
 
-use PhCrawler\Descriptors\UrlDescriptor;
-use PhCrawler\Descriptors\UrlPartsDescriptor;
+use PhCrawler\Descriptors\LinkDescriptor;
+use PhCrawler\Descriptors\LinkPartsDescriptor;
 use PhCrawler\Http\Response\DocumentInfo;
 use PhCrawler\Http\Response\ResponseHeader;
 
@@ -47,7 +47,7 @@ trait handleDocumentInfo
         $this->DocumentInfo->content = $raw;
     }
 
-    protected function setDocumentUrlParts(UrlPartsDescriptor $UrlParts) {
+    protected function setDocumentUrlParts(LinkPartsDescriptor $UrlParts) {
         $this->DocumentInfo->protocol = $UrlParts->protocol;
         $this->DocumentInfo->host = $UrlParts->host;
         $this->DocumentInfo->path = $UrlParts->path;
@@ -56,7 +56,7 @@ trait handleDocumentInfo
         $this->DocumentInfo->query = $UrlParts->query;
     }
 
-    protected function setDocumentUrl(UrlDescriptor $Url) {
+    protected function setDocumentUrl(LinkDescriptor $Url) {
         $this->DocumentInfo->url = $Url->url_rebuild;
         $this->DocumentInfo->url_link_depth = $Url->url_link_depth;
         $this->DocumentInfo->referer_url = $Url->refering_url;
