@@ -11,6 +11,7 @@ namespace PhCrawler;
 
 use PhCrawler\Descriptors\LinkDescriptor;
 use PhCrawler\Descriptors\LinkPartsDescriptor;
+use PhCrawler\Http\Response\DocumentInfo;
 use PhCrawler\Utils\LinkUtil;
 
 class LinkFinder
@@ -162,6 +163,10 @@ class LinkFinder
             $LinkDescriptor->is_redirect_url = true;
 
         return $LinkDescriptor;
+    }
+
+    public function findInDocumentInfo(DocumentInfo $documentInfo) {
+
     }
 
 }

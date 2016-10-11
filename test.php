@@ -19,36 +19,47 @@ use PhCrawler\Http\HttpClient;
 //);
 
 
-$linkCache = new SplQueue();
+$linkCache = new \PhCrawler\LinkCache();
 
-$linkCache->enqueue(new \PhCrawler\Descriptors\LinkDescriptor(
+$linkCache->addLink(new \PhCrawler\Descriptors\LinkDescriptor(
     'http://www.baidu.com'
 ));
 
-while($link = $linkCache->dequeue()) {
+while($link = $linkCache->getNextLink()) {
     /**@var $link \PhCrawler\Descriptors\LinkDescriptor*/
 
     var_dump($link);
-    if ( $link->url_link_depth > 2 ) continue;
 
     $Request = new HttpClient();
     $Request->setUrl($link);
 
     $DocumentInfo = $Request->fetch();
 
+    $linksFound = [];
+
     if ($DocumentInfo instanceof \PhCrawler\Http\Response\DocumentInfo) {
         $Finder = new \PhCrawler\LinkFinder();
+        $Filter = new \PhCrawler\LinkFilter();
+
         $Finder->setSourceLink($Request->LinkDescriptor);
-        $linkFound = $Finder->getRedirectLinkInHeader($DocumentInfo->header_received);
-        if ($linkFound) {
-            $linkCache->enqueue($linkFound);
-        }
-        foreach((array)$Finder->getLinksInContent($DocumentInfo->content) as $linkFound) {
+        $Filter->setBaseURL($Request->LinkDescriptor->url_rebuild);
+
+        $Filter->max_crawling_depth = 2;
+
+        $linksFound[] = $Finder->getRedirectLinkInHeader($DocumentInfo->header_received);
+        $linksFound = array_merge($linksFound, $Finder->getLinksInContent($DocumentInfo->content));
+
+        $linksFound = $Filter->filterLinks($linksFound);
+    }
+
+    if (count($linksFound)) {
+        foreach($linksFound as $linkFound) {
             if ($linkFound) {
-                $linkCache->enqueue($linkFound);
+                $linkCache->addLink($linkFound);
             }
         }
     }
+
 }
 
 
