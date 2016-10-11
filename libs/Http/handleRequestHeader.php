@@ -14,7 +14,7 @@ use PhCrawler\Descriptors\LinkPartsDescriptor;
 use PhCrawler\Http\Enums\RequestFieldEnum;
 use PhCrawler\Http\Request\Request;
 use PhCrawler\Utils\EncodingUtil;
-use PhCrawler\Utils\UrlUtil;
+use PhCrawler\Utils\LinkUtil;
 
 /**
  * Class RequestHeader
@@ -61,7 +61,7 @@ trait handleRequestHeader
 
         $query = $UrlParts->path . $UrlParts->file . $UrlParts->query;
         // If string already is a valid URL -> do nothing
-        if (UrlUtil::isValidUrlString($query)) {
+        if (LinkUtil::isValidUrlString($query)) {
             return $query;
         }
 

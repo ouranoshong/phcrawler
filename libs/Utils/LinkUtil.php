@@ -11,7 +11,7 @@ namespace PhCrawler\Utils;
 
 use PhCrawler\Descriptors\LinkPartsDescriptor;
 
-class UrlUtil
+class LinkUtil
 {
     public static function parse($url) {
         // Protokoll der URL hinzuf�gen (da ansonsten parse_url nicht klarkommt)
@@ -185,7 +185,7 @@ class UrlUtil
         $url_parts = $BaseUrl->toArray();
 
         // Dedoce HTML-entities
-        $link = Encoding::decodeHtmlEntities($link);
+        $link = EncodingUtil::decodeHtmlEntities($link);
 
         // Remove anchor ("#..."), but ONLY at the end, not if # is at the beginning !
         $link = preg_replace("/^(.{1,})#.{0,}$/", "\\1", $link);

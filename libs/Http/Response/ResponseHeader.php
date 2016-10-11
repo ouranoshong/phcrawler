@@ -10,7 +10,7 @@ namespace PhCrawler\Http\Response;
 
 
 use PhCrawler\Descriptors\CookieDescriptor;
-use PhCrawler\Utils\UrlUtil;
+use PhCrawler\Utils\LinkUtil;
 
 class ResponseHeader
 {
@@ -21,11 +21,11 @@ class ResponseHeader
         $this->source_url = $source_url;
 
         $this->http_status_code = self::parseHttpStatusCode($header_string);
-        $this->content_type = strtolower(UrlUtil::getHeaderValue($header_string, "content-type"));
-        $this->content_length = strtolower(UrlUtil::getHeaderValue($header_string, "content-length"));
+        $this->content_type = strtolower(LinkUtil::getHeaderValue($header_string, "content-type"));
+        $this->content_length = strtolower(LinkUtil::getHeaderValue($header_string, "content-length"));
         $this->cookies = self::getCookies($header_string, $source_url);
-        $this->transfer_encoding = strtolower(UrlUtil::getHeaderValue($header_string, "transfer-encoding"));
-        $this->content_encoding = strtolower(UrlUtil::getHeaderValue($header_string, "content-encoding"));
+        $this->transfer_encoding = strtolower(LinkUtil::getHeaderValue($header_string, "transfer-encoding"));
+        $this->content_encoding = strtolower(LinkUtil::getHeaderValue($header_string, "content-encoding"));
     }
 
     /**

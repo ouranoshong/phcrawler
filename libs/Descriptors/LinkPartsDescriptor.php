@@ -8,7 +8,7 @@
 
 namespace PhCrawler\Descriptors;
 
-use PhCrawler\Utils\UrlUtil;
+use PhCrawler\Utils\LinkUtil;
 
 class LinkPartsDescriptor
 {
@@ -74,7 +74,7 @@ class LinkPartsDescriptor
      * @return $this
      */
     public function init($url = '') {
-        $parts = UrlUtil::parse($url);
+        $parts = LinkUtil::parse($url);
         $this->protocol = $parts["protocol"];
         $this->host = $parts["host"];
         $this->path = $parts["path"];

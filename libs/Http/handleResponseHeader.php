@@ -13,7 +13,7 @@ use PhCrawler\Benchmark;
 use PhCrawler\Http\Enums\RequestErrors;
 use PhCrawler\Http\Enums\Timer;
 use PhCrawler\Http\Response\ResponseHeader;
-use PhCrawler\Utils\UrlUtil;
+use PhCrawler\Utils\LinkUtil;
 
 trait handleResponseHeader
 {
@@ -122,7 +122,7 @@ trait handleResponseHeader
             return false;
 
         // Check against the given content-type-rules
-        $receive = UrlUtil::checkStringAgainstRegexArray($content_type, $this->receive_content_types);
+        $receive = LinkUtil::checkStringAgainstRegexArray($content_type, $this->receive_content_types);
 
         return $receive;
     }
